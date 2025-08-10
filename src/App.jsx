@@ -438,18 +438,16 @@ function VisitedPage({ stations, onBack, onAddVisit, onClearVisits, onAttachPhot
                         </button>
                       ))}
                       <button
-                        className="w-full h-10 md:h-12 rounded-xl border-2 border-dashed border-black flex items-center justify-center text-sm bg-white"
+                        className="w-full aspect-square rounded-xl border-2 border-dashed border-black flex items-center justify-center bg-white"
                         onClick={()=>{ setPendingPhoto({stationId:st.id, index:idx}); fileRef.current?.click(); }}
                       >
-                        {(v.photos && v.photos.length) ? (
-                          <span className="relative">
-                            <Camera size={18}/>
+                        <span className="relative">
+                          <Camera size={24}/>
                             <Plus
-                              size={12}
-                              className="absolute -top-2 -right-2 bg-white rounded-full border border-black"
+                              size={14}
+                              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-full border border-black"
                             />
-                          </span>
-                        ) : 'Kein Foto – Foto hinzufügen'}
+                        </span>
                       </button>
                     </div>
                   </div>
