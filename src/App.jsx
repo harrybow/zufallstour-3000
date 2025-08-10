@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Settings as SettingsIcon, Shuffle, MapPin, Camera, Upload, Download, Trash2, ArrowUpDown, Check, ChevronLeft, Trophy, Pencil, Plus } from "lucide-react";
+
+import { Settings as SettingsIcon, Shuffle, MapPin, Camera, Upload, Download, Trash2, ArrowUpDown, Check, ChevronLeft, Trophy, Pencil, ImageUp } from "lucide-react";
 import { seedStations } from "./seed_stations";
 import HeaderLogo from "./components/HeaderLogo";
 import LineChips from "./components/LineChips";
@@ -441,13 +442,7 @@ function VisitedPage({ stations, onBack, onAddVisit, onClearVisits, onAttachPhot
                         className="w-full aspect-square rounded-xl border-2 border-dashed border-black flex items-center justify-center bg-white"
                         onClick={()=>{ setPendingPhoto({stationId:st.id, index:idx}); fileRef.current?.click(); }}
                       >
-                        <span className="relative">
-                          <Camera size={24}/>
-                            <Plus
-                              size={14}
-                              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-full border border-black"
-                            />
-                        </span>
+                        <ImageUp size={24}/>
                       </button>
                     </div>
                   </div>
