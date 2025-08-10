@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 200" role="img" aria-label="ZUFALLSTOUR 3000 Logo">
+  <defs>
+    <!-- Farbverlauf für Headline -->
+    <linearGradient id="headlineGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#67e8f9"/>
+      <stop offset="0.35" stop-color="#a78bfa"/>
+      <stop offset="0.7" stop-color="#d946ef"/>
+      <stop offset="1" stop-color="#ec4899"/>
+    </linearGradient>
+
+    <!-- Farbverlauf für 3000 -->
+    <linearGradient id="digitsGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#d946ef"/>
+      <stop offset="0.5" stop-color="#ec4899"/>
+      <stop offset="1" stop-color="#fb923c"/>
+    </linearGradient>
+
+    <!-- Transparenz-Verlauf -->
+    <linearGradient id="opacityGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.95"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0.60"/>
+    </linearGradient>
+    <mask id="digitsMask" maskUnits="objectBoundingBox">
+      <rect width="100%" height="100%" fill="url(#opacityGrad)"/>
+    </mask>
+
+    <!-- Shadow -->
+    <filter id="softShadow" x="-20%" y="-40%" width="160%" height="200%">
+      <feDropShadow dx="0" dy="6" stdDeviation="6" flood-color="rgba(0,0,0,0.45)"/>
+    </filter>
+  </defs>
+
+  <!-- ZUFALLSTOUR -->
+  <text x="600" y="120"
+        text-anchor="middle"
+        font-family="Impact, 'Arial Black', system-ui, sans-serif"
+        font-weight="900"
+        font-size="96"
+        letter-spacing="4"
+        fill="#000"
+        opacity="0.65"
+        transform="translate(6,8)">
+    ZUFALLSTOUR
+  </text>
+  <text x="600" y="120"
+        text-anchor="middle"
+        font-family="Impact, 'Arial Black', system-ui, sans-serif"
+        font-weight="900"
+        font-size="96"
+        letter-spacing="4"
+        fill="url(#headlineGrad)"
+        stroke="#000"
+        stroke-width="10"
+        paint-order="stroke fill"
+        filter="url(#softShadow)">
+    ZUFALLSTOUR
+  </text>
+
+  <!-- 3000 im Vordergrund -->
+  <g mask="url(#digitsMask)">
+    <text x="600" y="185"
+          text-anchor="middle"
+          font-family="Impact, 'Arial Black', system-ui, sans-serif"
+          font-weight="900"
+          font-size="120"
+          letter-spacing="6"
+          fill="url(#digitsGrad)">
+      3000
+    </text>
+  </g>
+</svg>
