@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Settings as SettingsIcon, Shuffle, MapPin, Camera, Upload, Download, Trash2, ArrowUpDown, Check, ChevronLeft, Trophy, Pencil, Plus } from "lucide-react";
 import { seedStations } from "./seed_stations";
-import WordArtLogo from "./components/WordArtLogo";
+import HeaderLogo from "./components/HeaderLogo";
 import LineChips from "./components/LineChips";
 import Modal from "./components/Modal";
 import ComboBox from "./components/ComboBox";
@@ -188,7 +188,7 @@ export default function App(){
   return (
     <div className="min-h-screen w-full bg-[repeating-linear-gradient(135deg,_#ffea61_0,_#ffea61_8px,_#ffd447_8px,_#ffd447_16px)] p-3 sm:p-6">
       <div className="max-w-3xl mx-auto">
-        <WordArtLogo />
+        <HeaderLogo />
         <style>{`
           button{cursor:pointer}
           @keyframes shake{10%,90%{transform:translateX(-1px)}20%,80%{transform:translateX(2px)}30%,50%,70%{transform:translateX(-4px)}40%,60%{transform:translateX(4px)}}
