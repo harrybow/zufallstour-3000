@@ -1,6 +1,12 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Settings as SettingsIcon, Shuffle, MapPin, Camera, Upload, Download, Trash2, X, ArrowUpDown, Check, ChevronLeft, Trophy, Pencil } from "lucide-react";
+import { Settings as SettingsIcon, Shuffle, MapPin, Camera, Upload, Download, Trash2, ArrowUpDown, Check, ChevronLeft, Trophy, Pencil } from "lucide-react";
 import { seedStations } from "./seed_stations";
+import WordArtLogo from "./components/WordArtLogo";
+import LineChips from "./components/LineChips";
+import Modal from "./components/Modal";
+import ComboBox from "./components/ComboBox";
+import ManualVisitForm from "./components/ManualVisitForm";
+import ZoomBox from "./components/ZoomBox";
 
 // Helpers & Types
 const STORAGE_KEY = "zufallstour3000.v4";
@@ -60,48 +66,6 @@ const normName = (s) => String(s||"")
   .replace(/\s+/g, ' ')
   .trim();
 
-
-// Logo
-function WordArtLogo(){
-  return (
-    <div className="flex flex-col items-center select-none mt-2 mb-6">
-      <div className="relative">
-        <h1 className="relative z-20 text-5xl sm:text-6xl md:text-7xl font-extrabold tracking-tight bg-gradient-to-r from-teal-300 via-purple-500 to-fuchsia-500 bg-clip-text text-transparent" style={{filter:"saturate(1.3)",letterSpacing:"0.5px",WebkitTextStroke:"4px #000",paintOrder:"stroke fill"}}>ZUFALLSTOUR</h1>
-        <h1 className="absolute inset-0 z-0 text-5xl sm:text-6xl md:text-7xl font-extrabold tracking-tight text-black" style={{transform:"translate(6px,6px)",opacity:.6}}>ZUFALLSTOUR</h1>
-        <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 z-40">
-          <span className="text-6xl sm:text-7xl md:text-8xl font-black italic bg-gradient-to-r from-purple-500 via-pink-500 to-yellow-300 bg-clip-text text-transparent" style={{WebkitMaskImage:"linear-gradient(to bottom, rgba(0,0,0,0.6), rgba(0,0,0,0.85) 50%, rgba(0,0,0,1))",maskImage:"linear-gradient(to bottom, rgba(0,0,0,0.6), rgba(0,0,0,0.85) 50%, rgba(0,0,0,1))"}}>3000</span>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// Linien-Chips (S=grün rund, U=blau eckig, R/RE/RB/FEX=rot kursiv eckig)
-function LineChips({ lines }){
-  if (!lines || !lines.length) return null;
-  const chip=(l,i)=>{ const t=String(l).toUpperCase(); const isS=/^S/.test(t), isU=/^U/.test(t), isR=/^(RE|RB|FEX|R)/.test(t);
-    const shape=isS?'rounded-full':'rounded-sm'; const bg=isS?'bg-[#2aa232]':isU?'bg-[#1f62ae]':isR?'bg-[#d22]':'bg-white';
-    const txt=(isS||isU||isR)?'text-white':'text-black'; const it=isR?'italic':'';
-    return <span key={i} className={`px-2 py-0.5 text-[10px] font-black ${shape} border-2 border-black ${bg} ${txt} ${it}`}>{l}</span>; };
-  return <div className="flex flex-wrap gap-1 mt-1">{lines.map(chip)}</div>;
-}
-
-// Modal
-function Modal({ open, onClose, title, children }){
-  if(!open) return null;
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/60" onClick={onClose} />
-      <div className="relative w-[96%] max-w-[860px] md:w-[760px] rounded-3xl shadow-2xl border-4 border-black p-4 md:p-6 bg-gradient-to-br from-yellow-300 via-fuchsia-200 to-cyan-200">
-        <div className="flex items-center justify-between mb-2">
-          <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight text-black drop-shadow">{title}</h2>
-          <button onClick={onClose} className="p-2 rounded-full bg-black text-white"><X size={18}/></button>
-        </div>
-        <div className="max-h-[85vh] md:max-h-[72vh] overflow-auto pr-1">{children}</div>
-      </div>
-    </div>
-  );
-}
 
 // App
 export default function App(){
@@ -493,118 +457,6 @@ function MilestonesModal({ open, onClose, percent, visitedCount, total, lineInde
         <section><div className="font-extrabold mb-2">Linien</div><div className="grid grid-cols-1 sm:grid-cols-2 gap-2">{Object.entries(lineIndex).map(([line,stat])=>{ const done=stat.visited>=stat.total&&stat.total>0; const pct=Math.round((stat.visited/stat.total)*100); return (<div key={line} className={`rounded-xl border-4 border-black p-2 ${done?"bg-green-200":"bg-white"}`}><div className="flex items-center gap-2 mb-1"><span className="px-2 py-0.5 text-xs font-black rounded-full border-2 border-black bg-white">{line}</span><div className="text-xs ml-auto">{stat.visited}/{stat.total} ({pct}%)</div></div><div className="w-full h-3 rounded-full border-2 border-black bg-white"><div className="h-full bg-green-500" style={{width:`${pct}%`}}/></div></div>); })}</div></section>
       </div>
     </Modal>
-  );
-}
-
-// Combobox (Such-Dropdown)
-function ComboBox({ options, value, onChange, placeholder = "Bahnhof wählen…" }){
-  const wrapRef = useRef(null);
-  const inputRef = useRef(null);
-  const [open, setOpen] = useState(false);
-  const [q, setQ] = useState("");
-  const [hi, setHi] = useState(0);
-  const norm = (s)=> String(s||"").toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
-  const labelOf = (id)=> options.find(o=>o.id===id)?.name || "";
-  const filtered = useMemo(()=>{
-    const nq = norm(q);
-    return nq ? options.filter(o=> norm(o.name).includes(nq)) : options;
-  }, [q, options]);
-
-  useEffect(()=>{
-    function onDocClick(e){ if(!wrapRef.current) return; if(!wrapRef.current.contains(e.target)) setOpen(false); }
-    document.addEventListener('mousedown', onDocClick);
-    return ()=> document.removeEventListener('mousedown', onDocClick);
-  }, []);
-
-  useEffect(()=>{ if(open){ setTimeout(()=> inputRef.current?.focus(), 0); setHi(0);} }, [open]);
-
-  function choose(id){ onChange?.(id); setOpen(false); setQ(""); }
-
-  function onKey(e){
-    if(!open && (e.key === 'ArrowDown' || e.key === 'Enter')){ setOpen(true); e.preventDefault(); return; }
-    if(!open) return;
-    if(e.key === 'ArrowDown'){ setHi(i=> Math.min(filtered.length-1, i+1)); e.preventDefault(); }
-    else if(e.key === 'ArrowUp'){ setHi(i=> Math.max(0, i-1)); e.preventDefault(); }
-    else if(e.key === 'Enter'){ const item = filtered[hi]; if(item) choose(item.id); e.preventDefault(); }
-    else if(e.key === 'Escape'){ setOpen(false); e.preventDefault(); }
-  }
-
-  return (
-    <div ref={wrapRef} className="relative">
-      <input
-        ref={inputRef}
-        value={open ? q : labelOf(value)}
-        onChange={(e)=>{ setQ(e.target.value); if(!open) setOpen(true); }}
-        onFocus={()=> setOpen(true)}
-        onKeyDown={onKey}
-        placeholder={placeholder}
-        className="w-full px-3 py-2 rounded-lg border-4 border-black bg-white"
-      />
-      <button type="button" onClick={()=> setOpen(o=>!o)} className="absolute right-2 top-1/2 -translate-y-1/2 px-2 py-1 rounded border-2 border-black bg-white">▾</button>
-      {open && (
-        <div className="absolute z-20 mt-1 left-0 right-0 max-h-64 overflow-auto rounded-lg border-4 border-black bg-white shadow">
-          {filtered.length === 0 ? (
-            <div className="px-3 py-2 text-sm opacity-70">Keine Treffer</div>
-          ) : (
-            filtered.map((o,idx)=> (
-              <button key={o.id} type="button" onMouseEnter={()=>setHi(idx)} onClick={()=>choose(o.id)}
-                className={`w-full text-left px-3 py-2 ${idx===hi? 'bg-amber-200' : 'bg-white'}`}
-              >{o.name}</button>
-            ))
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
-
-// Manual Visit Form
-function ManualVisitForm({ stations, onAdd, onCancel }){
-  const [stationId, setStationId] = useState(stations[0]?.id || "");
-  const [date, setDate] = useState(()=> new Date().toISOString().slice(0,10));
-  const [note, setNote] = useState("");
-  const [photos, setPhotos] = useState([]);
-  useEffect(()=>{ if(stations.length && !stations.find(s=>s.id===stationId)) setStationId(stations[0].id); }, [stations, stationId]);
-  async function onFile(e){ const files=Array.from(e.target.files||[]); if(!files.length) return; const urls=await Promise.all(files.map(fileToDataUrl)); setPhotos(p=>[...p, ...urls]); }
-  function submit(){ if(!stationId) return alert("Bitte Bahnhof auswählen"); onAdd(stationId, { date, note: note.trim()||undefined, photos: photos.length?photos:undefined }); setNote(""); setPhotos([]); }
-  return (
-    <div className="rounded-xl border-4 border-black bg:white/80 p-3">
-      <div className="font-extrabold mb-2">Besuch manuell hinzufügen</div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
-        <ComboBox options={stations} value={stationId} onChange={setStationId} />
-        <input type="date" value={date} onChange={e=>setDate(e.target.value)} className="px-3 py-2 rounded-lg border-4 border-black bg-white"/>
-      </div>
-      <div className="flex items-start gap-2 mb-2">
-        <textarea value={note} onChange={e=>setNote(e.target.value)} rows={3} placeholder="Notiz (optional)" className="flex-1 px-3 py-2 rounded-lg border-4 border-black bg-white"/>
-        <label className="w-16 h-16 rounded-xl bg-amber-300 border-4 border-black cursor-pointer font-extrabold flex items-center justify-center overflow-hidden" title="Foto hinzufügen">
-          {photos.length ? (<img src={photos[0]} alt="Foto" className="w-full h-full object-cover"/>) : (<Camera size={28}/>)}
-          <input type="file" accept="image/*" multiple className="hidden" onChange={onFile}/>
-        </label>
-      </div>
-      {photos.length>1 && (<div className="flex flex-wrap gap-2 mb-2">{photos.slice(1).map((p,i)=>(<img key={i} src={p} alt="Foto" className="w-16 h-16 object-cover rounded-xl border-4 border-black"/>))}</div>)}
-      <div className="flex flex-col md:flex-row gap-2 justify-end">
-        <button type="button" onClick={submit} className="w-full md:w-auto px-6 py-2 rounded-lg bg-black text-white font-extrabold border-4 border-black">Hinzufügen</button>
-        {onCancel && (<button type="button" onClick={onCancel} className="w-full md:w-auto px-6 py-2 rounded-lg bg-white border-4 border-black font-extrabold">Abbrechen</button>)}
-      </div>
-    </div>
-  );
-}
-
-// ZoomBox (Pan/Zoom)
-function ZoomBox({ src }){
-  const wrapRef = useRef(null); const [scale,setScale] = useState(1); const [pos,setPos] = useState({x:0,y:0}); const dragging=useRef(false); const last=useRef({x:0,y:0});
-  function onWheel(e){ e.preventDefault(); const delta=-e.deltaY, factor=delta>0?1.1:0.9; const next=Math.min(5, Math.max(1, scale*factor)); setScale(next); }
-  function onPointerDown(e){ dragging.current=true; last.current={x:e.clientX,y:e.clientY}; e.currentTarget.setPointerCapture(e.pointerId); }
-  function onPointerMove(e){ if(!dragging.current) return; const dx=e.clientX-last.current.x, dy=e.clientY-last.current.y; last.current={x:e.clientX,y:e.clientY}; setPos(p=>({x:p.x+dx,y:p.y+dy})); }
-  function onPointerUp(e){ dragging.current=false; try{ e.currentTarget.releasePointerCapture(e.pointerId); }catch{ /* ignore */ } }
-  const reset=()=>{ setScale(1); setPos({x:0,y:0}); };
-  return (
-    <div className="relative w-full h-[70vh] bg-white rounded-xl border-4 border-black overflow-hidden">
-      <div className="absolute top-2 right-2 z-10 flex gap-2"><button onClick={()=>setScale(s=>Math.min(5,s*1.1))} className="px-3 py-1 rounded-lg border-2 border-black bg-white">+</button><button onClick={()=>setScale(s=>Math.max(1,s/1.1))} className="px-3 py-1 rounded-lg border-2 border-black bg-white">-</button><button onClick={reset} className="px-3 py-1 rounded-lg border-2 border-black bg-white">Reset</button></div>
-      <div ref={wrapRef} onWheel={onWheel} onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp} className="w-full h-full flex items-center justify-center touch-none cursor-grab active:cursor-grabbing">
-        <img src={src} alt="Zoom" style={{ transform:`translate(${pos.x}px, ${pos.y}px) scale(${scale})` }} className="max-w-none max-h-none" />
-      </div>
-    </div>
   );
 }
 
