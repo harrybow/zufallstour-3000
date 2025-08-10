@@ -7,6 +7,8 @@ import Modal from "./components/Modal";
 import ComboBox from "./components/ComboBox";
 import ManualVisitForm from "./components/ManualVisitForm";
 import ZoomBox from "./components/ZoomBox";
+import Login from "./Login";
+import { fetchData, saveData, logout as apiLogout } from "./api.js";
 
 // Helpers & Types
 const STORAGE_KEY = "zufallstour3000.v4";
@@ -70,6 +72,7 @@ const normName = (s) => String(s||"")
 
 // App
 export default function App(){
+  const [token, setToken] = useState(()=>localStorage.getItem('authToken'));
   const [stations, setStations] = useState/** @type {Station[]} */(()=>{ try{ const raw=localStorage.getItem(STORAGE_KEY); if(raw) return normalizeStations(JSON.parse(raw));}catch{ /* ignore */ } return makeSeed(); });
   const [page, setPage] = useState/** @type {"home"|"visited"} */("home");
   const [rolled, setRolled] = useState/** @type {string[]} */([]);
@@ -82,9 +85,28 @@ export default function App(){
   const [showMilestones, setShowMilestones] = useState(false);
   const [cooldownEnabled, setCooldownEnabled] = useState(()=>{ try{ return JSON.parse(localStorage.getItem(COOLDOWN_KEY) ?? "true"); }catch{ return true; }});
 
-  useEffect(()=>{ localStorage.setItem(STORAGE_KEY, JSON.stringify(stations)); }, [stations]);
+  useEffect(()=>{
+    if(token){ saveData(token, stations).catch(()=>{}); }
+    else { localStorage.setItem(STORAGE_KEY, JSON.stringify(stations)); }
+  }, [stations, token]);
   useEffect(()=>{ localStorage.setItem(COOLDOWN_KEY, JSON.stringify(cooldownEnabled)); }, [cooldownEnabled]);
+  useEffect(()=>{
+    if(token){
+      fetchData(token).then(data=>{ if(data) setStations(normalizeStations(data)); }).catch(()=>setToken(null));
+    }
+  }, [token]);
   const visitedIds = useMemo(()=> new Set(stations.filter(s=>s.visits.length>0).map(s=>s.id)), [stations]);
+
+  function handleLogin(tok){ setToken(tok); }
+  function handleLogout(){ apiLogout(); setToken(null); }
+
+  if(!token){
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-amber-200">
+        <Login onSuccess={handleLogin} />
+      </div>
+    );
+  }
 
   function doRoll(){
     setPage('home'); setShowSettings(false); setShowMilestones(false); setAddVisitFor(null);
@@ -188,7 +210,10 @@ export default function App(){
   return (
     <div className="min-h-screen w-full bg-[repeating-linear-gradient(135deg,_#ffea61_0,_#ffea61_8px,_#ffd447_8px,_#ffd447_16px)] p-3 sm:p-6">
       <div className="max-w-3xl mx-auto">
-        <HeaderLogo />
+        <div className="flex items-center justify-between">
+          <HeaderLogo />
+          <button onClick={handleLogout} className="text-sm underline">Logout</button>
+        </div>
         <style>{`
           button{cursor:pointer}
           @keyframes shake{10%,90%{transform:translateX(-1px)}20%,80%{transform:translateX(2px)}30%,50%,70%{transform:translateX(-4px)}40%,60%{transform:translateX(4px)}}
