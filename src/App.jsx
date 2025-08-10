@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
+
 import { Settings as SettingsIcon, Shuffle, MapPin, Camera, Upload, Download, Trash2, ArrowUpDown, Check, ChevronLeft, Trophy, Pencil, ImageUp } from "lucide-react";
 import { seedStations } from "./seed_stations";
-import WordArtLogo from "./components/WordArtLogo";
+import HeaderLogo from "./components/HeaderLogo";
 import LineChips from "./components/LineChips";
 import Modal from "./components/Modal";
 import ComboBox from "./components/ComboBox";
@@ -14,7 +15,7 @@ const COOLDOWN_KEY = "zufallstour3000.cooldownEnabled";
 /** @typedef {{ id:string; name:string; types:("S"|"U"|"R")[]; lines?: string[]; visits: Visit[] }} Station */
 /** @typedef {{ date: string; note?: string; photos?: string[] }} Visit */
 const uid = () => Math.random().toString(36).slice(2, 10);
-const googleMapsUrl = (name) => `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(name + ", Berlin")}`;
+export const googleMapsUrl = (name) => `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(name + ", Berlin")}`;
 const downloadFile = (filename, text, mime = "application/json;charset=utf-8") => {
   try {
     const blob = new Blob([text], { type: mime });
@@ -29,9 +30,9 @@ const downloadFile = (filename, text, mime = "application/json;charset=utf-8") =
   }
 };
 const fileToDataUrl = (file) => new Promise((res, rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(file); });
-const makeDataUrl = (text, mime="application/json;charset=utf-8") => URL.createObjectURL(new Blob([text], {type:mime}));
-const pickThreeUnvisited = (stations/**:Station[]*/)=>{ const unvisited=stations.filter(s=>(s.visits?.length||0)===0); if(!unvisited.length) return []; const pool=[...unvisited]; for(let i=pool.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [pool[i],pool[j]]=[pool[j],pool[i]];} return pool.slice(0,Math.min(3,pool.length)).map(s=>s.id); };
-const rollAllowed = (lastTs, now=Date.now()) => !lastTs || (now-lastTs)>=20000;
+export const makeDataUrl = (text, mime="application/json;charset=utf-8") => URL.createObjectURL(new Blob([text], {type:mime}));
+export const pickThreeUnvisited = (stations/**:Station[]*/)=>{ const unvisited=stations.filter(s=>(s.visits?.length||0)===0); if(!unvisited.length) return []; const pool=[...unvisited]; for(let i=pool.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [pool[i],pool[j]]=[pool[j],pool[i]];} return pool.slice(0,Math.min(3,pool.length)).map(s=>s.id); };
+export const rollAllowed = (lastTs, now=Date.now()) => !lastTs || (now-lastTs)>=20000;
 
 // Seed aus externer Datei (seed_stations.js)
 const makeSeed = () => (seedStations || []).map(s => ({
@@ -188,7 +189,7 @@ export default function App(){
   return (
     <div className="min-h-screen w-full bg-[repeating-linear-gradient(135deg,_#ffea61_0,_#ffea61_8px,_#ffd447_8px,_#ffd447_16px)] p-3 sm:p-6">
       <div className="max-w-3xl mx-auto">
-        <WordArtLogo />
+        <HeaderLogo />
         <style>{`
           button{cursor:pointer}
           @keyframes shake{10%,90%{transform:translateX(-1px)}20%,80%{transform:translateX(2px)}30%,50%,70%{transform:translateX(-4px)}40%,60%{transform:translateX(4px)}}
@@ -319,7 +320,19 @@ function StationRow({ st, onAddVisit, onUnvisit }){
 
 // Visited Page
 function VisitedPage({ stations, onBack, onAddVisit, onClearVisits, onAttachPhotos, onUpdateNote }){
+  const sortModes = ['visitDate','name','createdAt'];
+  const sortLabels = {
+    visitDate: 'Besuchsdatum ↓',
+    name: 'Name ↓',
+    createdAt: 'Eintragsdatum ↓'
+  };
   const [sortKey, setSortKey] = useState('visitDate');
+  const cycleSortKey = () => {
+    setSortKey(prev => {
+      const idx = sortModes.indexOf(prev);
+      return sortModes[(idx + 1) % sortModes.length];
+    });
+  };
   const [confirmId, setConfirmId] = useState(null);
   const [zoom, setZoom] = useState(null); // {src, station, date}
   const fileRef = useRef(null);
@@ -348,7 +361,17 @@ function VisitedPage({ stations, onBack, onAddVisit, onClearVisits, onAttachPhot
       <div className="flex items-center gap-2 mb-4">
         <button onClick={onBack} className="px-3 py-2 rounded-full border-4 border-black bg-white flex items-center gap-2"><ChevronLeft size={18}/> Zurück</button>
         <div className="font-extrabold text-lg">Besuche</div>
-        <div className="ml-auto flex items-center gap-2 text-sm"><ArrowUpDown size={16}/><select value={sortKey} onChange={e=>setSortKey(e.target.value)} className="px-2 py-1 rounded-lg border-2 border-black bg-white"><option value="visitDate">Besuchsdatum ↓</option><option value="name">Name ↓</option><option value="createdAt">Eintragsdatum ↓</option></select></div>
+        <div className="ml-auto flex items-center gap-2 text-sm">
+        <div>{sortLabels[sortKey]}</div>
+          <button
+            onClick={cycleSortKey}
+            className="p-1 rounded-lg border-2 border-black bg-white"
+            title="Sortierung ändern"
+            type="button"
+          >
+            <ArrowUpDown size={16}/>
+          </button>
+        </div>
       </div>
 
       {manualOpen ? (<ManualVisitForm stations={unvisited} onAdd={onAddVisit} onCancel={()=>setManualOpen(false)} />) : (<button onClick={()=>setManualOpen(true)} className="w-full px-6 py-4 rounded-2xl text-xl font-black bg-gradient-to-r from-fuchsia-500 via-pink-500 to-orange-400 text-white border-4 border-black shadow-[6px_6px_0_rgba(0,0,0,0.6)] active:translate-y-[2px] active:shadow-[4px_4px_0_rgba(0,0,0,0.6)]">Besuch hinzufügen</button>)}
@@ -477,21 +500,4 @@ function MilestonesModal({ open, onClose, percent, visitedCount, total, lineInde
 }
 
 // Utils
-function formatDate(iso){ if(!iso) return ""; try{ const d=new Date(iso+(iso.length===10?"T00:00:00":"")); return d.toLocaleDateString("de-DE",{year:"numeric",month:"2-digit",day:"2-digit"}); }catch{ return iso; } }
-
-// Self-tests (console)
-if (typeof window !== "undefined"){
-  try{
-    console.assert(formatDate("2025-08-09") === "09.08.2025", "formatDate sollte 09.08.2025 liefern");
-    console.assert(formatDate("") === "", 'formatDate("") -> leerer String');
-    console.assert(formatDate("1999-12-31") === "31.12.1999", "formatDate Basisdatum");
-    const g1=googleMapsUrl("Alexanderplatz"); console.assert(typeof g1 === "string" && g1.includes("Alexanderplatz"), "googleMapsUrl enthält Namen");
-    const g2=googleMapsUrl("Frankfurter Allee"); console.assert(g2.includes("Frankfurter%20Allee"), "googleMapsUrl encoded Leerzeichen");
-    const demo=[ {id:"a",name:"A",types:["S"],visits:[]}, {id:"b",name:"B",types:["U"],visits:[]}, {id:"c",name:"C",types:["R"],visits:[{date:"2024-01-01"}]}, {id:"d",name:"D",types:["S","U"],visits:[]}, ];
-    const picked=pickThreeUnvisited(demo); console.assert(picked.length>=1 && picked.length<=3, "pickThreeUnvisited Länge 1..3"); console.assert(!picked.includes("c"), "besuchte Stationen dürfen nicht erscheinen"); console.assert(new Set(picked).size===picked.length, "keine Duplikate in Auswahl");
-    const now=Date.now(); console.assert(rollAllowed(0,now)===true, "Roll erlaubt ohne vorherigen Timestamp"); console.assert(rollAllowed(now-21000,now)===true, "Roll erlaubt nach >20s"); console.assert(rollAllowed(now-5000,now)===false, "Roll gesperrt <20s");
-    // Extra tests
-    console.assert(typeof makeDataUrl("{}") === "string", "makeDataUrl liefert URL");
-    console.assert(pickThreeUnvisited([{id:"x",name:"X",types:["S"],visits:[{date:"2020-01-01"}]}]).length===0, "keine unbesuchten -> leeres Array");
-  }catch(e){ console.warn("Selbsttest warnte:", e); }
-}
+export function formatDate(iso){ if(!iso) return ""; try{ const d=new Date(iso+(iso.length===10?"T00:00:00":"")); return d.toLocaleDateString("de-DE",{year:"numeric",month:"2-digit",day:"2-digit"}); }catch{ return iso; } }
