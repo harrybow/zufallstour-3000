@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Settings as SettingsIcon, Shuffle, MapPin, Camera, Upload, Download, Trash2, ArrowUpDown, Check, ChevronLeft, Trophy, Pencil } from "lucide-react";
+import { Settings as SettingsIcon, Shuffle, MapPin, Camera, Upload, Download, Trash2, ArrowUpDown, Check, ChevronLeft, Trophy, Pencil, Plus } from "lucide-react";
 import { seedStations } from "./seed_stations";
 import WordArtLogo from "./components/WordArtLogo";
 import LineChips from "./components/LineChips";
@@ -441,7 +441,15 @@ function VisitedPage({ stations, onBack, onAddVisit, onClearVisits, onAttachPhot
                         className="w-full h-10 md:h-12 rounded-xl border-2 border-dashed border-black flex items-center justify-center text-sm bg-white"
                         onClick={()=>{ setPendingPhoto({stationId:st.id, index:idx}); fileRef.current?.click(); }}
                       >
-                        {(v.photos && v.photos.length) ? 'Weitere Fotos hinzufügen' : 'Kein Foto – Foto hinzufügen'}
+                        {(v.photos && v.photos.length) ? (
+                          <span className="relative">
+                            <Camera size={18}/>
+                            <Plus
+                              size={12}
+                              className="absolute -top-2 -right-2 bg-white rounded-full border border-black"
+                            />
+                          </span>
+                        ) : 'Kein Foto – Foto hinzufügen'}
                       </button>
                     </div>
                   </div>
