@@ -319,7 +319,19 @@ function StationRow({ st, onAddVisit, onUnvisit }){
 
 // Visited Page
 function VisitedPage({ stations, onBack, onAddVisit, onClearVisits, onAttachPhotos, onUpdateNote }){
+  const sortModes = ['visitDate','name','createdAt'];
+  const sortLabels = {
+    visitDate: 'Besuchsdatum ↓',
+    name: 'Name ↓',
+    createdAt: 'Eintragsdatum ↓'
+  };
   const [sortKey, setSortKey] = useState('visitDate');
+  const cycleSortKey = () => {
+    setSortKey(prev => {
+      const idx = sortModes.indexOf(prev);
+      return sortModes[(idx + 1) % sortModes.length];
+    });
+  };
   const [confirmId, setConfirmId] = useState(null);
   const [zoom, setZoom] = useState(null); // {src, station, date}
   const fileRef = useRef(null);
@@ -348,7 +360,17 @@ function VisitedPage({ stations, onBack, onAddVisit, onClearVisits, onAttachPhot
       <div className="flex items-center gap-2 mb-4">
         <button onClick={onBack} className="px-3 py-2 rounded-full border-4 border-black bg-white flex items-center gap-2"><ChevronLeft size={18}/> Zurück</button>
         <div className="font-extrabold text-lg">Besuche</div>
-        <div className="ml-auto flex items-center gap-2 text-sm"><ArrowUpDown size={16}/><select value={sortKey} onChange={e=>setSortKey(e.target.value)} className="px-2 py-1 rounded-lg border-2 border-black bg-white"><option value="visitDate">Besuchsdatum ↓</option><option value="name">Name ↓</option><option value="createdAt">Eintragsdatum ↓</option></select></div>
+        <div className="ml-auto flex items-center gap-2 text-sm">
+          <button
+            onClick={cycleSortKey}
+            className="p-1 rounded-lg border-2 border-black bg-white"
+            title="Sortierung ändern"
+            type="button"
+          >
+            <ArrowUpDown size={16}/>
+          </button>
+          <div>{sortLabels[sortKey]}</div>
+        </div>
       </div>
 
       {manualOpen ? (<ManualVisitForm stations={unvisited} onAdd={onAddVisit} onCancel={()=>setManualOpen(false)} />) : (<button onClick={()=>setManualOpen(true)} className="w-full px-6 py-4 rounded-2xl text-xl font-black bg-gradient-to-r from-fuchsia-500 via-pink-500 to-orange-400 text-white border-4 border-black shadow-[6px_6px_0_rgba(0,0,0,0.6)] active:translate-y-[2px] active:shadow-[4px_4px_0_rgba(0,0,0,0.6)]">Besuch hinzufügen</button>)}
