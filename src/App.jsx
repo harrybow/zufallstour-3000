@@ -361,6 +361,7 @@ function VisitedPage({ stations, onBack, onAddVisit, onClearVisits, onAttachPhot
         <button onClick={onBack} className="px-3 py-2 rounded-full border-4 border-black bg-white flex items-center gap-2"><ChevronLeft size={18}/> Zurück</button>
         <div className="font-extrabold text-lg">Besuche</div>
         <div className="ml-auto flex items-center gap-2 text-sm">
+        <div>{sortLabels[sortKey]}</div>
           <button
             onClick={cycleSortKey}
             className="p-1 rounded-lg border-2 border-black bg-white"
@@ -369,7 +370,6 @@ function VisitedPage({ stations, onBack, onAddVisit, onClearVisits, onAttachPhot
           >
             <ArrowUpDown size={16}/>
           </button>
-          <div>{sortLabels[sortKey]}</div>
         </div>
       </div>
 
