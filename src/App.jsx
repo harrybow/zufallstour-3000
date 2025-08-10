@@ -331,8 +331,8 @@ function VisitedPage({ stations, onBack, onAddVisit, onClearVisits, onAttachPhot
     <div className="rounded-[28px] border-4 border-black shadow-[10px_10px_0_0_rgba(0,0,0,0.6)] bg-gradient-to-br from-teal-300 via-rose-200 to-amber-200 p-4 sm:p-6 mb-4">
       <div className="flex items-center gap-2 mb-4">
         <button onClick={onBack} className="px-3 py-2 rounded-full border-4 border-black bg-white flex items-center gap-2"><ChevronLeft size={18}/> Zurück</button>
-        <div className="font-extrabold text-lg">Besuchte Bahnhöfe</div>
-        <div className="ml-auto flex items-center gap-2 text-sm"><ArrowUpDown size={16}/><select value={sortKey} onChange={e=>setSortKey(e.target.value)} className="px-2 py-1 rounded-lg border-2 border-black bg-white"><option value="visitDate">Besuchsdatum (neu → alt)</option><option value="name">Name (A–Z)</option><option value="createdAt">Eintragsdatum (neu → alt)</option></select></div>
+        <div className="font-extrabold text-lg">Besuche</div>
+        <div className="ml-auto flex items-center gap-2 text-sm"><ArrowUpDown size={16}/><select value={sortKey} onChange={e=>setSortKey(e.target.value)} className="px-2 py-1 rounded-lg border-2 border-black bg-white"><option value="visitDate">Besuchsdatum ↓</option><option value="name">Name ↓</option><option value="createdAt">Eintragsdatum ↓</option></select></div>
       </div>
 
       {manualOpen ? (<ManualVisitForm stations={unvisited} onAdd={onAddVisit} onCancel={()=>setManualOpen(false)} />) : (<button onClick={()=>setManualOpen(true)} className="w-full px-6 py-4 rounded-2xl text-xl font-black bg-gradient-to-r from-fuchsia-500 via-pink-500 to-orange-400 text-white border-4 border-black shadow-[6px_6px_0_rgba(0,0,0,0.6)] active:translate-y-[2px] active:shadow-[4px_4px_0_rgba(0,0,0,0.6)]">Besuch hinzufügen</button>)}
