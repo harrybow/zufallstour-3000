@@ -5,7 +5,7 @@ import { seedStations } from "./seed_stations";
 // Helpers & Types
 const STORAGE_KEY = "zufallstour3000.v4";
 /** @typedef {{ id:string; name:string; types:("S"|"U"|"R")[]; lines?: string[]; visits: Visit[] }} Station */
-/** @typedef {{ date: string; note?: string; photo?: string }} Visit */
+/** @typedef {{ date: string; note?: string; photos?: string[] }} Visit */
 const uid = () => Math.random().toString(36).slice(2, 10);
 const googleMapsUrl = (name) => `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(name + ", Berlin")}`;
 const downloadFile = (filename, text, mime = "application/json;charset=utf-8") => {
@@ -34,6 +34,23 @@ const makeSeed = () => (seedStations || []).map(s => ({
   lines: Array.isArray(s.lines) ? s.lines.map(x=>String(x)) : [],
   visits: []
 }));
+
+// Migration/Normalisierung bestehender Daten
+const normalizeStations = (data) => {
+  if (!Array.isArray(data)) return makeSeed();
+  return data.map(st => ({
+    ...st,
+    visits: Array.isArray(st.visits)
+      ? st.visits.map(v => {
+          const photos = Array.isArray(v.photos)
+            ? v.photos
+            : (v.photo ? [v.photo] : []);
+          const { photo: _photo, ...rest } = v || {};
+          return { ...rest, photos };
+        })
+      : [],
+  }));
+};
 
 // Normalisierung für Namens-Abgleich (für Merge-Import)
 const normName = (s) => String(s||"")
@@ -88,7 +105,7 @@ function Modal({ open, onClose, title, children }){
 
 // App
 export default function App(){
-  const [stations, setStations] = useState/** @type {Station[]} */(()=>{ try{ const raw=localStorage.getItem(STORAGE_KEY); if(raw) return JSON.parse(raw);}catch{} return makeSeed(); });
+  const [stations, setStations] = useState/** @type {Station[]} */(()=>{ try{ const raw=localStorage.getItem(STORAGE_KEY); if(raw) return normalizeStations(JSON.parse(raw));}catch{ /* ignore */ } return makeSeed(); });
   const [page, setPage] = useState/** @type {"home"|"visited"} */("home");
   const [rolled, setRolled] = useState/** @type {string[]} */([]);
   const [showSettings, setShowSettings] = useState(false);
@@ -101,11 +118,10 @@ export default function App(){
 
   useEffect(()=>{ localStorage.setItem(STORAGE_KEY, JSON.stringify(stations)); }, [stations]);
   const visitedIds = useMemo(()=> new Set(stations.filter(s=>s.visits.length>0).map(s=>s.id)), [stations]);
-  const unvisited = useMemo(()=> stations.filter(s=> !visitedIds.has(s.id)), [stations, visitedIds]);
 
   function doRoll(){
     setPage('home'); setShowSettings(false); setShowMilestones(false); setAddVisitFor(null);
-    if (exportDialog.open){ try{ URL.revokeObjectURL(exportDialog.href); }catch{}; setExportDialog({open:false, href:"", filename:"", text:""}); }
+    if (exportDialog.open){ try{ URL.revokeObjectURL(exportDialog.href); }catch{ /* ignore */ } setExportDialog({open:false, href:"", filename:"", text:""}); }
     const now=Date.now();
     if (!rollAllowed(lastRollRef.current, now)) { setDenyShake(true); setDenyMessage("srsly? ;)"); setTimeout(()=>setDenyShake(false),600); setTimeout(()=>setDenyMessage(""),1800); return; }
     lastRollRef.current = now; setRolled(pickThreeUnvisited(stations));
@@ -113,7 +129,7 @@ export default function App(){
 
   function addVisit(stationId, visit/**:Visit*/){ setStations(prev=>prev.map(s=> s.id===stationId ? {...s, visits:[...s.visits, visit]} : s)); setAddVisitFor(null); }
   function removeAllVisits(stationId){ setStations(prev=>prev.map(s=> s.id===stationId ? {...s, visits:[]} : s)); }
-  function attachPhoto(stationId, visitIndex, photoData){ setStations(prev=>prev.map(s=> s.id===stationId ? {...s, visits:s.visits.map((v,i)=> i===visitIndex?{...v, photo:photoData}:v)} : s)); }
+  function attachPhotos(stationId, visitIndex, photos){ setStations(prev=>prev.map(s=> s.id===stationId ? {...s, visits:s.visits.map((v,i)=> i===visitIndex?{...v, photos:[...(v.photos||[]), ...photos]}:v)} : s)); }
 
   // NEW: Notiz aktualisieren (inline Edit)
   function updateVisitNote(stationId, visitIndex, note){
@@ -141,7 +157,7 @@ export default function App(){
           .map(v=>({
             date: String(v?.date || ""),
             note: typeof v?.note === "string" ? v.note : undefined,
-            photo: v?.photo || undefined,
+            photos: Array.isArray(v?.photos) ? v.photos.filter(Boolean) : (v?.photo ? [v.photo] : []),
           }))
           .filter(v=> v.date) : [],
       }));
@@ -179,7 +195,7 @@ export default function App(){
           for(const v of inc.visits){
             const d = String(v.date);
             if(!d || have.has(d)) continue;
-            target.visits.push({ date: d, note: v.note, photo: v.photo });
+            target.visits.push({ date: d, note: v.note, photos: v.photos });
             have.add(d);
           }
   
@@ -260,7 +276,7 @@ export default function App(){
         )}
 
         {page==='visited' && (
-          <VisitedPage stations={stations} onBack={()=>setPage('home')} onAddVisit={addVisit} onClearVisits={removeAllVisits} onAttachPhoto={attachPhoto} onUpdateNote={updateVisitNote} />
+          <VisitedPage stations={stations} onBack={()=>setPage('home')} onAddVisit={addVisit} onClearVisits={removeAllVisits} onAttachPhotos={attachPhotos} onUpdateNote={updateVisitNote} />
         )}
 
         <Modal open={showSettings} onClose={()=>setShowSettings(false)} title="Einstellungen">
@@ -274,7 +290,7 @@ export default function App(){
           </div>
         </Modal>
 
-        <Modal open={exportDialog.open} onClose={()=>{ try{ URL.revokeObjectURL(exportDialog.href);}catch{}; setExportDialog(p=>({...p, open:false})); }} title="Backup exportiert">
+        <Modal open={exportDialog.open} onClose={()=>{ try{ URL.revokeObjectURL(exportDialog.href);}catch{ /* ignore */ } setExportDialog(p=>({...p, open:false})); }} title="Backup exportiert">
           <div className="space-y-3">
             <p className="text-sm">Falls dein Browser den automatischen Download blockiert, nutze diesen Link:</p>
             <a href={exportDialog.href} download={exportDialog.filename} className="px-4 py-2 rounded-full bg-green-500 border-4 border-black font-extrabold inline-flex items-center gap-2 cursor-pointer"><Download size={18}/> {exportDialog.filename}</a>
@@ -316,13 +332,13 @@ function StationRow({ st, onAddVisit, onUnvisit }){
         {isVisited && (<button onClick={onUnvisit} className="w-full justify-center px-3 py-2 rounded-full bg-red-500 text-white font-extrabold border-4 border-black flex items-center gap-2"><Trash2 size={18}/> Besuch löschen</button>)}
       </div>
 
-      {lastVisit?.photo && (<div className="mt-3"><img src={lastVisit.photo} alt="Besuchsbild" className="w-full max-h-72 object-cover rounded-xl border-4 border-black"/></div>)}
+      {lastVisit?.photos?.[0] && (<div className="mt-3"><img src={lastVisit.photos[0]} alt="Besuchsbild" className="w-full max-h-72 object-cover rounded-xl border-4 border-black"/></div>)}
     </div>
   );
 }
 
 // Visited Page
-function VisitedPage({ stations, onBack, onAddVisit, onClearVisits, onAttachPhoto, onUpdateNote }){
+function VisitedPage({ stations, onBack, onAddVisit, onClearVisits, onAttachPhotos, onUpdateNote }){
   const [sortKey, setSortKey] = useState('visitDate');
   const [confirmId, setConfirmId] = useState(null);
   const [zoom, setZoom] = useState(null); // {src, station, date}
@@ -336,7 +352,7 @@ function VisitedPage({ stations, onBack, onAddVisit, onClearVisits, onAttachPhot
   const unvisited = useMemo(()=> stations.filter(s=> s.visits.length===0), [stations]);
   const visitedSorted = useMemo(()=>{ const arr=[...visited]; switch(sortKey){ case 'name': arr.sort((a,b)=>a.name.localeCompare(b.name)); break; case 'createdAt': arr.sort((a,b)=>(b.createdAt||0)-(a.createdAt||0)); break; default: arr.sort((a,b)=> latestISO(b).localeCompare(latestISO(a))); } return arr; }, [visited, sortKey]);
 
-  async function onFileChange(e){ const f=e.target.files?.[0]; if(!f||!pendingPhoto) return; const dataUrl=await fileToDataUrl(f); onAttachPhoto(pendingPhoto.stationId, pendingPhoto.index, dataUrl); setPendingPhoto(null); try{ e.target.value=''; }catch{} }
+  async function onFileChange(e){ const files=Array.from(e.target.files||[]); if(!files.length||!pendingPhoto) return; const dataUrls=await Promise.all(files.map(fileToDataUrl)); onAttachPhotos(pendingPhoto.stationId, pendingPhoto.index, dataUrls); setPendingPhoto(null); try{ e.target.value=''; }catch{ /* ignore */ } }
 
   function startEdit(stationId, index, currentText){ setEditing({ stationId, index, text: currentText || "" }); }
   function cancelEdit(){ setEditing(null); }
@@ -409,21 +425,23 @@ function VisitedPage({ stations, onBack, onAddVisit, onClearVisits, onAttachPhot
                       ))
                     )}
 
-                    {v.photo ? (
-                      <button
-                        className="w-full h-64 rounded-xl overflow-hidden border-2 border-black bg-white"
-                        onClick={()=>setZoom({src:v.photo, station:st.name, date:v.date})}
-                      >
-                        <img src={v.photo} alt="Foto" className="w-full h-full object-contain"/>
-                      </button>
-                    ) : (
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                      {(v.photos || []).map((p,pidx)=> (
+                        <button
+                          key={pidx}
+                          className="w-full h-64 rounded-xl overflow-hidden border-2 border-black bg-white"
+                          onClick={()=>setZoom({src:p, station:st.name, date:v.date})}
+                        >
+                          <img src={p} alt="Foto" className="w-full h-full object-contain"/>
+                        </button>
+                      ))}
                       <button
                         className="w-full h-10 md:h-12 rounded-xl border-2 border-dashed border-black flex items-center justify-center text-sm bg-white"
                         onClick={()=>{ setPendingPhoto({stationId:st.id, index:idx}); fileRef.current?.click(); }}
                       >
-                        Kein Foto – Foto hinzufügen
+                        {(v.photos && v.photos.length) ? 'Weitere Fotos hinzufügen' : 'Kein Foto – Foto hinzufügen'}
                       </button>
-                    )}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -440,7 +458,7 @@ function VisitedPage({ stations, onBack, onAddVisit, onClearVisits, onAttachPhot
         </div>
       </Modal>
 
-      <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={onFileChange} />
+      <input ref={fileRef} type="file" accept="image/*" multiple className="hidden" onChange={onFileChange} />
       <Modal open={!!zoom} onClose={()=>setZoom(null)} title={`${zoom?.station ?? ''} ${zoom?.date ? '– ' + formatDate(zoom.date) : ''}`}>{zoom && (<ZoomBox src={zoom.src} />)}</Modal>
     </div>
   );
@@ -450,14 +468,14 @@ function VisitedPage({ stations, onBack, onAddVisit, onClearVisits, onAttachPhot
 function AddVisitForm({ stationId, onSave }){
   const [date, setDate] = useState(()=> new Date().toISOString().slice(0,10));
   const [note, setNote] = useState("");
-  const [photoData, setPhotoData] = useState(null);
-  async function onFile(e){ const f=e.target.files?.[0]; if(!f) return; const dataUrl=await fileToDataUrl(f); setPhotoData(dataUrl); }
-  function submit(){ if(!date) return alert("Bitte Datum wählen"); onSave(stationId, { date, note: note.trim()||undefined, photo: photoData||undefined }); }
+  const [photos, setPhotos] = useState([]);
+  async function onFile(e){ const files=Array.from(e.target.files||[]); if(!files.length) return; const urls=await Promise.all(files.map(fileToDataUrl)); setPhotos(p=>[...p, ...urls]); }
+  function submit(){ if(!date) return alert("Bitte Datum wählen"); onSave(stationId, { date, note: note.trim()||undefined, photos: photos.length?photos:undefined }); }
   return (
     <div className="space-y-3">
       <div><label className="font-bold text-sm">Datum</label><input type="date" value={date} onChange={e=>setDate(e.target.value)} className="w-full mt-1 px-3 py-2 rounded-lg border-4 border-black bg-white"/></div>
       <div><label className="font-bold text-sm">Notiz (optional)</label><textarea value={note} onChange={e=>setNote(e.target.value)} rows={3} className="w-full mt-1 px-3 py-2 rounded-lg border-4 border-black bg-white" placeholder="z.B. Sonnenuntergang auf der Brücke 🌇"/></div>
-      <div><label className="font-bold text-sm block mb-1">Foto (optional)</label><label className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-300 border-4 border-black cursor-pointer font-extrabold"><Camera size={18}/> Datei wählen<input type="file" accept="image/*" className="hidden" onChange={onFile}/></label>{photoData && (<div className="mt-2"><img src={photoData} alt="Preview" className="max-h-56 rounded-xl border-4 border-black"/></div>)}</div>
+      <div><label className="font-bold text-sm block mb-1">Fotos (optional)</label><label className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-300 border-4 border-black cursor-pointer font-extrabold"><Camera size={18}/> Datei wählen<input type="file" accept="image/*" multiple className="hidden" onChange={onFile}/></label>{photos.length>0 && (<div className="mt-2 flex flex-wrap gap-2">{photos.map((p,i)=>(<img key={i} src={p} alt="Preview" className="max-h-56 rounded-xl border-4 border-black"/>))}</div>)}</div>
       <div className="flex"><button onClick={submit} className="w-full md:w-auto px-6 py-2 rounded-full bg-black text-white font-extrabold border-4 border-black">Speichern</button></div>
     </div>
   );
@@ -545,11 +563,10 @@ function ManualVisitForm({ stations, onAdd, onCancel }){
   const [stationId, setStationId] = useState(stations[0]?.id || "");
   const [date, setDate] = useState(()=> new Date().toISOString().slice(0,10));
   const [note, setNote] = useState("");
-  const [photoData, setPhotoData] = useState(null);
-  const norm = (s)=> String(s||"").toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
-  useEffect(()=>{ if(stations.length && !stations.find(s=>s.id===stationId)) setStationId(stations[0].id); }, [stations]);
-  async function onFile(e){ const f=e.target.files?.[0]; if(!f) return; const dataUrl=await fileToDataUrl(f); setPhotoData(dataUrl); }
-  function submit(){ if(!stationId) return alert("Bitte Bahnhof auswählen"); onAdd(stationId, { date, note: note.trim()||undefined, photo: photoData||undefined }); setNote(""); setPhotoData(null); }
+  const [photos, setPhotos] = useState([]);
+  useEffect(()=>{ if(stations.length && !stations.find(s=>s.id===stationId)) setStationId(stations[0].id); }, [stations, stationId]);
+  async function onFile(e){ const files=Array.from(e.target.files||[]); if(!files.length) return; const urls=await Promise.all(files.map(fileToDataUrl)); setPhotos(p=>[...p, ...urls]); }
+  function submit(){ if(!stationId) return alert("Bitte Bahnhof auswählen"); onAdd(stationId, { date, note: note.trim()||undefined, photos: photos.length?photos:undefined }); setNote(""); setPhotos([]); }
   return (
     <div className="rounded-xl border-4 border-black bg:white/80 p-3">
       <div className="font-extrabold mb-2">Besuch manuell hinzufügen</div>
@@ -560,10 +577,11 @@ function ManualVisitForm({ stations, onAdd, onCancel }){
       <div className="flex items-start gap-2 mb-2">
         <textarea value={note} onChange={e=>setNote(e.target.value)} rows={3} placeholder="Notiz (optional)" className="flex-1 px-3 py-2 rounded-lg border-4 border-black bg-white"/>
         <label className="w-16 h-16 rounded-xl bg-amber-300 border-4 border-black cursor-pointer font-extrabold flex items-center justify-center overflow-hidden" title="Foto hinzufügen">
-          {photoData ? (<img src={photoData} alt="Foto" className="w-full h-full object-cover"/>) : (<Camera size={28}/>)}
-          <input type="file" accept="image/*" className="hidden" onChange={onFile}/>
+          {photos.length ? (<img src={photos[0]} alt="Foto" className="w-full h-full object-cover"/>) : (<Camera size={28}/>)}
+          <input type="file" accept="image/*" multiple className="hidden" onChange={onFile}/>
         </label>
       </div>
+      {photos.length>1 && (<div className="flex flex-wrap gap-2 mb-2">{photos.slice(1).map((p,i)=>(<img key={i} src={p} alt="Foto" className="w-16 h-16 object-cover rounded-xl border-4 border-black"/>))}</div>)}
       <div className="flex flex-col md:flex-row gap-2 justify-end">
         <button type="button" onClick={submit} className="w-full md:w-auto px-6 py-2 rounded-lg bg-black text-white font-extrabold border-4 border-black">Hinzufügen</button>
         {onCancel && (<button type="button" onClick={onCancel} className="w-full md:w-auto px-6 py-2 rounded-lg bg-white border-4 border-black font-extrabold">Abbrechen</button>)}
@@ -578,7 +596,7 @@ function ZoomBox({ src }){
   function onWheel(e){ e.preventDefault(); const delta=-e.deltaY, factor=delta>0?1.1:0.9; const next=Math.min(5, Math.max(1, scale*factor)); setScale(next); }
   function onPointerDown(e){ dragging.current=true; last.current={x:e.clientX,y:e.clientY}; e.currentTarget.setPointerCapture(e.pointerId); }
   function onPointerMove(e){ if(!dragging.current) return; const dx=e.clientX-last.current.x, dy=e.clientY-last.current.y; last.current={x:e.clientX,y:e.clientY}; setPos(p=>({x:p.x+dx,y:p.y+dy})); }
-  function onPointerUp(e){ dragging.current=false; try{ e.currentTarget.releasePointerCapture(e.pointerId); }catch{} }
+  function onPointerUp(e){ dragging.current=false; try{ e.currentTarget.releasePointerCapture(e.pointerId); }catch{ /* ignore */ } }
   const reset=()=>{ setScale(1); setPos({x:0,y:0}); };
   return (
     <div className="relative w-full h-[70vh] bg-white rounded-xl border-4 border-black overflow-hidden">
