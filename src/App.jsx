@@ -7,9 +7,10 @@ import Modal from "./components/Modal";
 import ComboBox from "./components/ComboBox";
 import ManualVisitForm from "./components/ManualVisitForm";
 import ZoomBox from "./components/ZoomBox";
+import Login from "./Login";
+import { fetchData, saveData } from "./api";
 
 // Helpers & Types
-const STORAGE_KEY = "zufallstour3000.v4";
 const COOLDOWN_KEY = "zufallstour3000.cooldownEnabled";
 /** @typedef {{ id:string; name:string; types:("S"|"U"|"R")[]; lines?: string[]; visits: Visit[] }} Station */
 /** @typedef {{ date: string; note?: string; photos?: string[] }} Visit */
@@ -70,7 +71,11 @@ const normName = (s) => String(s||"")
 
 // App
 export default function App(){
-  const [stations, setStations] = useState/** @type {Station[]} */(()=>{ try{ const raw=localStorage.getItem(STORAGE_KEY); if(raw) return normalizeStations(JSON.parse(raw));}catch{ /* ignore */ } return makeSeed(); });
+  const [token, setToken] = useState(()=>{
+    try{ return localStorage.getItem("token") || ""; }catch{ return ""; }
+  });
+  const [stations, setStations] = useState/** @type {Station[]} */(()=> makeSeed());
+  const [loaded, setLoaded] = useState(!token);
   const [page, setPage] = useState/** @type {"home"|"visited"} */("home");
   const [rolled, setRolled] = useState/** @type {string[]} */([]);
   const [showSettings, setShowSettings] = useState(false);
@@ -82,8 +87,16 @@ export default function App(){
   const [showMilestones, setShowMilestones] = useState(false);
   const [cooldownEnabled, setCooldownEnabled] = useState(()=>{ try{ return JSON.parse(localStorage.getItem(COOLDOWN_KEY) ?? "true"); }catch{ return true; }});
 
-  useEffect(()=>{ localStorage.setItem(STORAGE_KEY, JSON.stringify(stations)); }, [stations]);
+  useEffect(()=>{ if(token) saveData(token, stations); }, [stations, token]);
   useEffect(()=>{ localStorage.setItem(COOLDOWN_KEY, JSON.stringify(cooldownEnabled)); }, [cooldownEnabled]);
+  useEffect(()=>{
+    if(token){
+      setLoaded(false);
+      fetchData(token)
+        .then(d=> setStations(normalizeStations(d.stations || [])))
+        .finally(()=> setLoaded(true));
+    }
+  }, [token]);
   const visitedIds = useMemo(()=> new Set(stations.filter(s=>s.visits.length>0).map(s=>s.id)), [stations]);
 
   function doRoll(){
@@ -184,6 +197,13 @@ export default function App(){
   const visitedCount = visitedIds.size, total = stations.length||1, percent = Math.round((visitedCount/total)*100);
   const lastVisitDate = useMemo(()=>{ let max=""; stations.forEach(s=> s.visits.forEach(v=>{ if((v.date||"")>max) max=v.date; })); return max; }, [stations]);
   const lineIndex = useMemo(()=>{ const map={}; stations.forEach(s=>{ (s.lines||[]).forEach(l=>{ if(!map[l]) map[l]={total:0,visited:0}; map[l].total+=1; if(s.visits.length>0) map[l].visited+=1; }); }); return map; }, [stations]);
+
+  if(!token){
+    return <Login onSuccess={(t)=>{ setToken(t); try{ localStorage.setItem('token', t); }catch{ /* ignore */ } }} />;
+  }
+  if(!loaded){
+    return <div className="p-4">Lädt…</div>;
+  }
 
   return (
     <div className="min-h-screen w-full bg-[repeating-linear-gradient(135deg,_#ffea61_0,_#ffea61_8px,_#ffd447_8px,_#ffd447_16px)] p-3 sm:p-6">
