@@ -14,7 +14,7 @@ const COOLDOWN_KEY = "zufallstour3000.cooldownEnabled";
 /** @typedef {{ id:string; name:string; types:("S"|"U"|"R")[]; lines?: string[]; visits: Visit[] }} Station */
 /** @typedef {{ date: string; note?: string; photos?: string[] }} Visit */
 const uid = () => Math.random().toString(36).slice(2, 10);
-const googleMapsUrl = (name) => `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(name + ", Berlin")}`;
+export const googleMapsUrl = (name) => `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(name + ", Berlin")}`;
 const downloadFile = (filename, text, mime = "application/json;charset=utf-8") => {
   try {
     const blob = new Blob([text], { type: mime });
@@ -29,9 +29,9 @@ const downloadFile = (filename, text, mime = "application/json;charset=utf-8") =
   }
 };
 const fileToDataUrl = (file) => new Promise((res, rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(file); });
-const makeDataUrl = (text, mime="application/json;charset=utf-8") => URL.createObjectURL(new Blob([text], {type:mime}));
-const pickThreeUnvisited = (stations/**:Station[]*/)=>{ const unvisited=stations.filter(s=>(s.visits?.length||0)===0); if(!unvisited.length) return []; const pool=[...unvisited]; for(let i=pool.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [pool[i],pool[j]]=[pool[j],pool[i]];} return pool.slice(0,Math.min(3,pool.length)).map(s=>s.id); };
-const rollAllowed = (lastTs, now=Date.now()) => !lastTs || (now-lastTs)>=20000;
+export const makeDataUrl = (text, mime="application/json;charset=utf-8") => URL.createObjectURL(new Blob([text], {type:mime}));
+export const pickThreeUnvisited = (stations/**:Station[]*/)=>{ const unvisited=stations.filter(s=>(s.visits?.length||0)===0); if(!unvisited.length) return []; const pool=[...unvisited]; for(let i=pool.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [pool[i],pool[j]]=[pool[j],pool[i]];} return pool.slice(0,Math.min(3,pool.length)).map(s=>s.id); };
+export const rollAllowed = (lastTs, now=Date.now()) => !lastTs || (now-lastTs)>=20000;
 
 // Seed aus externer Datei (seed_stations.js)
 const makeSeed = () => (seedStations || []).map(s => ({
@@ -507,21 +507,4 @@ function MilestonesModal({ open, onClose, percent, visitedCount, total, lineInde
 }
 
 // Utils
-function formatDate(iso){ if(!iso) return ""; try{ const d=new Date(iso+(iso.length===10?"T00:00:00":"")); return d.toLocaleDateString("de-DE",{year:"numeric",month:"2-digit",day:"2-digit"}); }catch{ return iso; } }
-
-// Self-tests (console)
-if (typeof window !== "undefined"){
-  try{
-    console.assert(formatDate("2025-08-09") === "09.08.2025", "formatDate sollte 09.08.2025 liefern");
-    console.assert(formatDate("") === "", 'formatDate("") -> leerer String');
-    console.assert(formatDate("1999-12-31") === "31.12.1999", "formatDate Basisdatum");
-    const g1=googleMapsUrl("Alexanderplatz"); console.assert(typeof g1 === "string" && g1.includes("Alexanderplatz"), "googleMapsUrl enthält Namen");
-    const g2=googleMapsUrl("Frankfurter Allee"); console.assert(g2.includes("Frankfurter%20Allee"), "googleMapsUrl encoded Leerzeichen");
-    const demo=[ {id:"a",name:"A",types:["S"],visits:[]}, {id:"b",name:"B",types:["U"],visits:[]}, {id:"c",name:"C",types:["R"],visits:[{date:"2024-01-01"}]}, {id:"d",name:"D",types:["S","U"],visits:[]}, ];
-    const picked=pickThreeUnvisited(demo); console.assert(picked.length>=1 && picked.length<=3, "pickThreeUnvisited Länge 1..3"); console.assert(!picked.includes("c"), "besuchte Stationen dürfen nicht erscheinen"); console.assert(new Set(picked).size===picked.length, "keine Duplikate in Auswahl");
-    const now=Date.now(); console.assert(rollAllowed(0,now)===true, "Roll erlaubt ohne vorherigen Timestamp"); console.assert(rollAllowed(now-21000,now)===true, "Roll erlaubt nach >20s"); console.assert(rollAllowed(now-5000,now)===false, "Roll gesperrt <20s");
-    // Extra tests
-    console.assert(typeof makeDataUrl("{}") === "string", "makeDataUrl liefert URL");
-    console.assert(pickThreeUnvisited([{id:"x",name:"X",types:["S"],visits:[{date:"2020-01-01"}]}]).length===0, "keine unbesuchten -> leeres Array");
-  }catch(e){ console.warn("Selbsttest warnte:", e); }
-}
+export function formatDate(iso){ if(!iso) return ""; try{ const d=new Date(iso+(iso.length===10?"T00:00:00":"")); return d.toLocaleDateString("de-DE",{year:"numeric",month:"2-digit",day:"2-digit"}); }catch{ return iso; } }
