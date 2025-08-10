@@ -10,6 +10,7 @@ import ZoomBox from "./components/ZoomBox";
 
 // Helpers & Types
 const STORAGE_KEY = "zufallstour3000.v4";
+const COOLDOWN_KEY = "zufallstour3000.cooldownEnabled";
 /** @typedef {{ id:string; name:string; types:("S"|"U"|"R")[]; lines?: string[]; visits: Visit[] }} Station */
 /** @typedef {{ date: string; note?: string; photos?: string[] }} Visit */
 const uid = () => Math.random().toString(36).slice(2, 10);
@@ -79,15 +80,17 @@ export default function App(){
   const [denyMessage, setDenyMessage] = useState("");
   const lastRollRef = useRef(0);
   const [showMilestones, setShowMilestones] = useState(false);
+  const [cooldownEnabled, setCooldownEnabled] = useState(()=>{ try{ return JSON.parse(localStorage.getItem(COOLDOWN_KEY) ?? "true"); }catch{ return true; }});
 
   useEffect(()=>{ localStorage.setItem(STORAGE_KEY, JSON.stringify(stations)); }, [stations]);
+  useEffect(()=>{ localStorage.setItem(COOLDOWN_KEY, JSON.stringify(cooldownEnabled)); }, [cooldownEnabled]);
   const visitedIds = useMemo(()=> new Set(stations.filter(s=>s.visits.length>0).map(s=>s.id)), [stations]);
 
   function doRoll(){
     setPage('home'); setShowSettings(false); setShowMilestones(false); setAddVisitFor(null);
     if (exportDialog.open){ try{ URL.revokeObjectURL(exportDialog.href); }catch{ /* ignore */ } setExportDialog({open:false, href:"", filename:"", text:""}); }
     const now=Date.now();
-    if (!rollAllowed(lastRollRef.current, now)) { setDenyShake(true); setDenyMessage("srsly? ;)"); setTimeout(()=>setDenyShake(false),600); setTimeout(()=>setDenyMessage(""),1800); return; }
+    if (cooldownEnabled && !rollAllowed(lastRollRef.current, now)) { setDenyShake(true); setDenyMessage("srsly? ;)"); setTimeout(()=>setDenyShake(false),600); setTimeout(()=>setDenyMessage(""),1800); return; }
     lastRollRef.current = now; setRolled(pickThreeUnvisited(stations));
   }
 
@@ -251,6 +254,19 @@ export default function App(){
               <button onClick={exportJson} title="JSON exportieren" className="px-4 py-2 rounded-full bg-green-500 text-black font-extrabold border-4 border-black flex items-center gap-2"><Download size={18}/> Export</button>
               <label className="px-4 py-2 rounded-full bg-amber-300 text-black font-extrabold border-4 border-black flex items-center gap-2 cursor-pointer"><Upload size={18}/> Import<input type="file" accept="application/json" className="hidden" onChange={(e)=>e.target.files && importJson(e.target.files[0])} /></label>
             </div>
+          </div>
+          <div className="mt-4 rounded-2xl border-4 border-black p-4 bg-white/80">
+            <h3 className="font-extrabold text-lg mb-2">Würfel-Cooldown</h3>
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                className="w-4 h-4 rounded border-2 border-black"
+                checked={cooldownEnabled}
+                onChange={e=>setCooldownEnabled(e.target.checked)}
+              />
+              <span>20-Sekunden-Cooldown aktiv</span>
+            </label>
+            <p className="text-xs mt-1 opacity-80">Deaktivieren, um ohne „srsly?“-Hinweis schnell zu würfeln.</p>
           </div>
         </Modal>
 
