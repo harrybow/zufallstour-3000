@@ -1,34 +1,51 @@
-/* eslint-env node */
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import process from 'node:process';
+import { describe, it, expect, beforeEach } from 'vitest';
+import * as register from '../functions/api/register.js';
+import * as login from '../functions/api/login.js';
+import * as password from '../functions/api/password.js';
 
-let server;
-let base;
+function makeEnv(){
+  const store = {};
+  return {
+    DB: {
+      async get(key){ return store[key] || null; },
+      async put(key, val){ store[key] = val; }
+    }
+  };
+}
 
-beforeAll(async () => {
-  process.env.PORT = 0;
-  server = (await import('../server/index.js')).default;
-  await new Promise(res => server.on('listening', res));
-  const addr = server.address();
-  base = `http://127.0.0.1:${addr.port}`;
-});
+function makeRequest(url, method, body, token){
+  return new Request(`http://localhost${url}`, {
+    method,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+    },
+    body: body ? JSON.stringify(body) : undefined
+  });
+}
 
-afterAll(async () => {
-  await new Promise(res => server.close(res));
+let env;
+
+beforeEach(() => {
+  env = makeEnv();
 });
 
 describe('password change', () => {
   it('changes password and rejects old password', async () => {
-    let res = await fetch(`${base}/api/register`, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({username:'alice', password:'oldpw'})});
+    let res = await register.onRequestPost({ request: makeRequest('/api/register', 'POST', { username: 'alice', password: 'oldpw' }), env });
     expect(res.status).toBe(200);
-    res = await fetch(`${base}/api/login`, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({username:'alice', password:'oldpw'})});
+
+    res = await login.onRequestPost({ request: makeRequest('/api/login', 'POST', { username: 'alice', password: 'oldpw' }), env });
     expect(res.status).toBe(200);
     const { token } = await res.json();
-    res = await fetch(`${base}/api/password`, {method:'POST', headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`}, body: JSON.stringify({oldPassword:'oldpw', newPassword:'newpw'})});
+
+    res = await password.onRequestPost({ request: makeRequest('/api/password', 'POST', { oldPassword: 'oldpw', newPassword: 'newpw' }, token), env });
     expect(res.status).toBe(200);
-    res = await fetch(`${base}/api/login`, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({username:'alice', password:'newpw'})});
+
+    res = await login.onRequestPost({ request: makeRequest('/api/login', 'POST', { username: 'alice', password: 'newpw' }), env });
     expect(res.status).toBe(200);
-    res = await fetch(`${base}/api/login`, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({username:'alice', password:'oldpw'})});
+
+    res = await login.onRequestPost({ request: makeRequest('/api/login', 'POST', { username: 'alice', password: 'oldpw' }), env });
     expect(res.status).toBe(401);
   });
 });

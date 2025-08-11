@@ -1,0 +1,7 @@
+name = "zufallstour-3000"
+compatibility_date = "2024-05-01"
+
+[[kv_namespaces]]
+binding = "DB"
+id = ""
+preview_id = ""
