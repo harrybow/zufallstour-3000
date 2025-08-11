@@ -77,7 +77,7 @@ const normName = (s) => String(s||"")
 export default function App(){
   const [token, setToken] = useState(()=>localStorage.getItem('authToken'));
   const [stations, setStations] = useState/** @type {Station[]} */(()=>{ try{ const raw=localStorage.getItem(STORAGE_KEY); if(raw) return normalizeStations(JSON.parse(raw));}catch{ /* ignore */ } return makeSeed(); });
-  const [page, setPage] = useState/** @type {"home"|"visited"} */("home");
+  const [page, setPage] = useState/** @type {"home"|"visited"|"stations"} */("home");
   const [rolled, setRolled] = useState/** @type {string[]} */([]);
   const [showSettings, setShowSettings] = useState(false);
   const [addVisitFor, setAddVisitFor] = useState/** @type {Station|null} */(null);
@@ -302,6 +302,7 @@ export default function App(){
               <span className="inline-flex items-center gap-2 mx-auto"><Shuffle size={22}/> WÜRFELN</span>
             </button>
             <button onClick={()=>setPage('visited')} className="w-full justify-center px-4 py-3 rounded-full font-bold bg-white text-black flex items-center gap-2 border-4 border-black shadow hover:brightness-110 active:translate-y-[1px]">Besuchte Bahnhöfe</button>
+            <button onClick={()=>setPage('stations')} className="w-full justify-center px-4 py-3 rounded-full font-bold bg-white text-black flex items-center gap-2 border-4 border-black shadow hover:brightness-110 active:translate-y-[1px]">Alle Bahnhöfe</button>
             <button onClick={()=>setShowSettings(true)} className="w-full justify-center px-4 py-3 rounded-full font-bold bg-black text-white flex items-center border-4 border-black shadow" aria-label="Einstellungen" title="Einstellungen"><SettingsIcon size={20}/></button>
           </div>
 
@@ -319,6 +320,10 @@ export default function App(){
 
         {page==='visited' && (
           <VisitedPage stations={stations} onBack={()=>setPage('home')} onAddVisit={addVisit} onClearVisits={removeAllVisits} onAttachPhotos={attachPhotos} onUpdateNote={updateVisitNote} />
+        )}
+
+        {page==='stations' && (
+          <StationsPage stations={stations} onBack={()=>setPage('home')} />
         )}
 
         <Modal open={showSettings} onClose={()=>setShowSettings(false)} title="Einstellungen">
@@ -409,6 +414,73 @@ function StationRow({ st, origin, onAddVisit, onUnvisit }){
       </div>
 
       {lastVisit?.photos?.[0] && (<div className="mt-3"><img src={lastVisit.photos[0]} alt="Besuchsbild" className="w-full max-h-72 object-cover rounded-xl border-4 border-black"/></div>)}
+    </div>
+  );
+}
+
+// Stations Page
+function StationsPage({ stations, onBack }){
+  const [typeFilter, setTypeFilter] = useState({ S:true, U:true, R:true });
+  const [onlyUnvisited, setOnlyUnvisited] = useState(false);
+  const [sortOldest, setSortOldest] = useState(false);
+
+  const toggleType = (t) => setTypeFilter(f => ({ ...f, [t]: !f[t] }));
+
+  const filtered = useMemo(() => stations.filter(st => {
+    if (onlyUnvisited && st.visits.length > 0) return false;
+    if (!st.types.some(t => typeFilter[t])) return false;
+    return true;
+  }), [stations, typeFilter, onlyUnvisited]);
+
+  const sorted = useMemo(() => {
+    const arr = [...filtered];
+    if (sortOldest) {
+      arr.sort((a,b)=>{
+        const aDate = a.visits.length ? a.visits[a.visits.length-1].date : '9999-99-99';
+        const bDate = b.visits.length ? b.visits[b.visits.length-1].date : '9999-99-99';
+        return aDate.localeCompare(bDate);
+      });
+    } else {
+      arr.sort((a,b)=>a.name.localeCompare(b.name));
+    }
+    return arr;
+  }, [filtered, sortOldest]);
+
+  return (
+    <div className="rounded-[28px] border-4 border-black shadow-[10px_10px_0_0_rgba(0,0,0,0.6)] bg-gradient-to-br from-teal-300 via-rose-200 to-amber-200 p-4 sm:p-6 mb-4">
+      <div className="flex items-center gap-2 mb-4">
+        <button onClick={onBack} className="px-3 py-2 rounded-full border-4 border-black bg-white flex items-center gap-2"><ChevronLeft size={18}/> Zurück</button>
+        <div className="font-extrabold text-lg">Alle Bahnhöfe</div>
+      </div>
+
+      <div className="flex flex-wrap gap-2 mb-4 text-sm">
+        {['S','U','R'].map(t => (
+          <button
+            key={t}
+            onClick={()=>toggleType(t)}
+            className={`px-3 py-1 rounded-full border-2 border-black ${typeFilter[t]?"bg-black text-white":"bg-white"}`}
+          >{t}</button>
+        ))}
+        <button
+          onClick={()=>setOnlyUnvisited(v=>!v)}
+          className={`px-3 py-1 rounded-full border-2 border-black ${onlyUnvisited?"bg-black text-white":"bg-white"}`}
+        >Noch nie besucht</button>
+        <button
+          onClick={()=>setSortOldest(s=>!s)}
+          className={`px-3 py-1 rounded-full border-2 border-black ${sortOldest?"bg-black text-white":"bg-white"}`}
+        >Am längsten her</button>
+      </div>
+
+      <div className="space-y-2 max-h-[60vh] overflow-y-auto pr-1">
+        {sorted.length===0 && (<div className="text-sm">Keine Bahnhöfe gefunden.</div>)}
+        {sorted.map(st => (
+          <div key={st.id} className="p-2 border-2 border-black rounded-lg bg-white">
+            <div className="font-bold truncate">{st.name}</div>
+            <LineChips lines={st.lines} />
+            <div className="text-xs mt-1">{st.visits.length?`Zuletzt am ${formatDate(st.visits[st.visits.length-1].date)}`:'Noch nie besucht'}</div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
