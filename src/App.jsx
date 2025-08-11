@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 
-import { Settings as SettingsIcon, Shuffle, MapPin, Camera, Upload, Download, Trash2, ArrowUpDown, Check, ChevronLeft, Trophy, Pencil, ImageUp } from "lucide-react";
+import { Settings as SettingsIcon, Shuffle, MapPin, Camera, Upload, Download, Trash2, ArrowUpDown, Check, ChevronLeft, Trophy, Pencil, ImageUp, KeyRound } from "lucide-react";
 import { fetchJourneyDuration } from "./journeys";
 import { seedStations } from "./seed_stations";
 import HeaderLogo from "./components/HeaderLogo";
@@ -10,7 +10,7 @@ import ComboBox from "./components/ComboBox";
 import ManualVisitForm from "./components/ManualVisitForm";
 import ZoomBox from "./components/ZoomBox";
 import Login from "./Login";
-import { fetchData, saveData, logout as apiLogout, deleteAccount } from "./api.js";
+import { fetchData, saveData, logout as apiLogout, deleteAccount, changePassword } from "./api.js";
 
 // Helpers & Types
 const STORAGE_KEY = "zufallstour3000.v4";
@@ -89,6 +89,7 @@ export default function App(){
   const [addVisitFor, setAddVisitFor] = useState/** @type {Station|null} */(null);
   const [exportDialog, setExportDialog] = useState({open:false, href:"", filename:"", text:""});
   const [showDeleteAccount, setShowDeleteAccount] = useState(false);
+  const [showChangePassword, setShowChangePassword] = useState(false);
   const [denyShake, setDenyShake] = useState(false);
   const [denyMessage, setDenyMessage] = useState("");
   const lastRollRef = useRef(0);
@@ -182,6 +183,17 @@ export default function App(){
     apiLogout();
     setShowDeleteAccount(false);
     setToken(null);
+  }
+
+  async function submitChangePassword(oldPw, newPw){
+    if(!token) return;
+    try{
+      await changePassword(token, oldPw, newPw);
+      setShowChangePassword(false);
+      alert('Passwort geändert');
+    }catch{
+      alert('Passwortänderung fehlgeschlagen');
+    }
   }
 
   if(!token){
@@ -393,10 +405,16 @@ export default function App(){
           </div>
           <div className="mt-4 rounded-2xl border-4 border-black p-4 bg-white/80">
             <h3 className="font-extrabold text-lg mb-2">Konto</h3>
-            <button
-              onClick={()=>setShowDeleteAccount(true)}
-              className="px-4 py-2 rounded-full bg-red-600 text-white font-extrabold border-4 border-black flex items-center gap-2"
-            ><Trash2 size={18}/> Konto löschen</button>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <button
+                onClick={()=>setShowChangePassword(true)}
+                className="px-4 py-2 rounded-full bg-blue-500 text-white font-extrabold border-4 border-black flex items-center gap-2"
+              ><KeyRound size={18}/> Passwort ändern</button>
+              <button
+                onClick={()=>setShowDeleteAccount(true)}
+                className="px-4 py-2 rounded-full bg-red-600 text-white font-extrabold border-4 border-black flex items-center gap-2"
+              ><Trash2 size={18}/> Konto löschen</button>
+            </div>
           </div>
         </Modal>
 
@@ -406,6 +424,10 @@ export default function App(){
             <a href={exportDialog.href} download={exportDialog.filename} className="px-4 py-2 rounded-full bg-green-500 border-4 border-black font-extrabold inline-flex items-center gap-2 cursor-pointer"><Download size={18}/> {exportDialog.filename}</a>
             <div><p className="text-sm mb-1">Oder kopiere den JSON-Inhalt:</p><textarea readOnly value={exportDialog.text} className="w-full h-40 p-2 rounded-lg border-4 border-black bg-white text-xs"></textarea></div>
           </div>
+        </Modal>
+
+        <Modal open={showChangePassword} onClose={()=>setShowChangePassword(false)} title="Passwort ändern">
+          <ChangePasswordForm onSave={submitChangePassword} onCancel={()=>setShowChangePassword(false)} />
         </Modal>
 
         <Modal open={showDeleteAccount} onClose={()=>setShowDeleteAccount(false)} title="Konto löschen">
@@ -684,6 +706,19 @@ function VisitedPage({ stations, onBack, onAddVisit, onClearVisits, onAttachPhot
 
       <input ref={fileRef} type="file" accept="image/*" multiple className="hidden" onChange={onFileChange} />
       <Modal open={!!zoom} onClose={()=>setZoom(null)} title={`${zoom?.station ?? ''} ${zoom?.date ? '– ' + formatDate(zoom.date) : ''}`}>{zoom && (<ZoomBox src={zoom.src} />)}</Modal>
+    </div>
+  );
+}
+
+// Change Password Form
+function ChangePasswordForm({ onSave, onCancel }){
+  const [oldPw, setOldPw] = useState('');
+  const [newPw, setNewPw] = useState('');
+  return (
+    <div className="space-y-3">
+      <div><label className="font-bold text-sm">Altes Passwort</label><input type="password" value={oldPw} onChange={e=>setOldPw(e.target.value)} className="w-full mt-1 px-3 py-2 rounded-lg border-4 border-black bg-white"/></div>
+      <div><label className="font-bold text-sm">Neues Passwort</label><input type="password" value={newPw} onChange={e=>setNewPw(e.target.value)} className="w-full mt-1 px-3 py-2 rounded-lg border-4 border-black bg-white"/></div>
+      <div className="flex gap-2 justify-end"><button onClick={onCancel} className="px-4 py-2 rounded-lg bg-white border-2 border-black">Abbrechen</button><button onClick={()=>onSave(oldPw, newPw)} className="px-4 py-2 rounded-lg bg-black text-white border-2 border-black">Speichern</button></div>
     </div>
   );
 }
