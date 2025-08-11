@@ -1,7 +1,7 @@
 name = "zufallstour-3000"
-compatibility_date = "2024-05-01"
+compatibility_date = "2024-08-11"
 
 [[kv_namespaces]]
 binding = "DB"
 id = "37acae97c20240979b10e8b9a61a1e41"
-preview_id = ""
+preview_id = "94fcb0dea86d42d19033bc0612955df8"
