@@ -2,8 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Camera } from "lucide-react";
 import ComboBox from "./ComboBox";
 import { useI18n } from "../i18n.jsx";
-
-const fileToDataUrl = (file) => new Promise((res, rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(file); });
+import { fileToDataUrl } from "../imageUtils.js";
 
 export default function ManualVisitForm({ stations, onAdd, onCancel }){
   const { t } = useI18n();
