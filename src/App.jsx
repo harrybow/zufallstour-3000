@@ -90,17 +90,22 @@ export default function App(){
   const [homeStation, setHomeStation] = useState(()=>{ try{ return localStorage.getItem(HOME_KEY) || ""; }catch{ return ""; }});
   const [coords, setCoords] = useState(null);
 
-  useEffect(()=>{
-    if(token){
-      saveData(token, stations).catch(()=>{});
-    } else {
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(stations));
-      } catch (e) {
-        console.warn('Failed to persist stations to localStorage', e);
+  function updateStations(updater){
+    setStations(prev => {
+      const next = typeof updater === 'function' ? updater(prev) : updater;
+      if(token){
+        saveData(token, next).catch(()=>{});
+      } else {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+        } catch (e) {
+          console.warn('Failed to persist stations to localStorage', e);
+        }
       }
-    }
-  }, [stations, token]);
+      return next;
+    });
+  }
+
   useEffect(()=>{
     try {
       localStorage.setItem(COOLDOWN_KEY, JSON.stringify(cooldownEnabled));
@@ -124,7 +129,7 @@ export default function App(){
   }, []);
   useEffect(()=>{
     if(token){
-      fetchData(token).then(data=>{ if(data) setStations(normalizeStations(data)); }).catch(()=>setToken(null));
+      fetchData(token).then(data=>{ if(data) updateStations(normalizeStations(data)); }).catch(()=>setToken(null));
     }
   }, [token]);
   const visitedIds = useMemo(()=> new Set(stations.filter(s=>s.visits.length>0).map(s=>s.id)), [stations]);
@@ -168,14 +173,14 @@ export default function App(){
     lastRollRef.current = now; setRolled(pickThreeUnvisited(stations));
   }
 
-  function addVisit(stationId, visit/**:Visit*/){ setStations(prev=>prev.map(s=> s.id===stationId ? {...s, visits:[...s.visits, visit]} : s)); setAddVisitFor(null); }
-  function removeAllVisits(stationId){ setStations(prev=>prev.map(s=> s.id===stationId ? {...s, visits:[]} : s)); }
-  function attachPhotos(stationId, visitIndex, photos){ setStations(prev=>prev.map(s=> s.id===stationId ? {...s, visits:s.visits.map((v,i)=> i===visitIndex?{...v, photos:[...(v.photos||[]), ...photos]}:v)} : s)); }
+  function addVisit(stationId, visit/**:Visit*/){ updateStations(prev=>prev.map(s=> s.id===stationId ? {...s, visits:[...s.visits, visit]} : s)); setAddVisitFor(null); }
+  function removeAllVisits(stationId){ updateStations(prev=>prev.map(s=> s.id===stationId ? {...s, visits:[]} : s)); }
+  function attachPhotos(stationId, visitIndex, photos){ updateStations(prev=>prev.map(s=> s.id===stationId ? {...s, visits:s.visits.map((v,i)=> i===visitIndex?{...v, photos:[...(v.photos||[]), ...photos]}:v)} : s)); }
 
   // NEW: Notiz aktualisieren (inline Edit)
   function updateVisitNote(stationId, visitIndex, note){
     const clean = (note || "").trim();
-    setStations(prev => prev.map(s => s.id===stationId
+    updateStations(prev => prev.map(s => s.id===stationId
       ? {...s, visits: s.visits.map((v,i)=> i===visitIndex ? {...v, note: clean || undefined} : v)}
       : s
     ));
@@ -204,7 +209,7 @@ export default function App(){
       }));
   
       // Merge in bestehenden Zustand
-      setStations(prev => {
+      updateStations(prev => {
         const byKey = new Map(prev.map(s => [normName(s.name), {...s}]));
         const next = Array.from(byKey.values());
   
