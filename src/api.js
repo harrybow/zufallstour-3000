@@ -6,7 +6,19 @@ export async function login(username, password){
   const res = await fetch('/api/login', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({username, password})});
   if(!res.ok) throw new Error('Login failed');
   const data = await res.json();
-  localStorage.setItem('authToken', data.token);
+  try {
+    localStorage.setItem('authToken', data.token);
+  } catch (e) {
+    // Speicher voll? alte lokale Daten entfernen und erneut versuchen
+    console.warn('Auth token could not be stored, trying to free space', e);
+    try {
+      localStorage.removeItem('zufallstour3000.v4');
+      localStorage.setItem('authToken', data.token);
+    } catch (e2) {
+      console.error('Failed to store auth token', e2);
+      throw e2;
+    }
+  }
   return data.token;
 }
 export function logout(){ localStorage.removeItem('authToken'); }
