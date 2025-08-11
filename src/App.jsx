@@ -408,7 +408,7 @@ function StationRow({ st, origin, onAddVisit, onUnvisit }){
             {lastVisit?.note && (<span className="opacity-90 truncate">Notiz: {lastVisit.note}</span>)}
             {duration!=null && (<span>≈ {duration} min</span>)}
           </div>
-          <LineChips lines={st.lines} />
+          <LineChips lines={st.lines} types={st.types} />
         </div>
       </div>
 
@@ -481,7 +481,7 @@ function StationsPage({ stations, onBack }){
         {sorted.map(st => (
           <div key={st.id} className="p-2 border-2 border-black rounded-lg bg-white">
             <div className="font-bold truncate">{st.name}</div>
-            <LineChips lines={st.lines} />
+            <LineChips lines={st.lines} types={st.types} />
             <div className="text-xs mt-1">{st.visits.length?`Zuletzt am ${formatDate(st.visits[st.visits.length-1].date)}`:'Noch nie besucht'}</div>
           </div>
         ))}
@@ -555,7 +555,7 @@ function VisitedPage({ stations, onBack, onAddVisit, onClearVisits, onAttachPhot
               <div className="flex items-start gap-3">
                 <div className="flex-1 min-w-0">
                   <div className="font-extrabold truncate">{st.name}</div>
-                  <LineChips lines={st.lines} />
+                  <LineChips lines={st.lines} types={st.types} />
                   <div className="text-xs mt-1">Zuletzt am <b>{formatDate(st.visits[st.visits.length-1].date)}</b></div>
                 </div>
                 <div className="shrink-0"><button type="button" onClick={()=>setConfirmId(st.id)} className="w-9 h-9 rounded-full bg-red-500 text-white border-2 border-black flex items-center justify-center" title="Besuch(e) löschen"><Trash2 size={16}/></button></div>
