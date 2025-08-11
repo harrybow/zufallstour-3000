@@ -13,3 +13,6 @@ binding = "ASSETS"
 binding = "DB"
 id = "37acae97c20240979b10e8b9a61a1e41"
 preview_id = "94fcb0dea86d42d19033bc0612955df8"
+
+[observability.logs]
+enabled = true

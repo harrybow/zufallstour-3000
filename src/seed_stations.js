@@ -15,7 +15,6 @@ const SEED_STATIONS = [
   { name: "Anhalter Bahnhof", types:["S"], lines:["S1","S2","S25","S26"] },
   { name: "Attilastraße", types:["S"], lines:["S2"] },
   { name: "Augsburger Straße", types:["U"], lines:["U3"] },
-  
   { name: "Baumschulenweg", types:["S"], lines:["S45","S46","S47","S8","S85","S9"] },
   { name: "Bayerischer Platz", types:["U"], lines:["U4","U7"] },
   { name: "Bellevue", types:["S"], lines:["S3","S5","S7","S9"] },
@@ -44,22 +43,18 @@ const SEED_STATIONS = [
   { name: "Bundestag", types:["U"], lines:["U5"] },
   { name: "Charlottenburg", types:["S","R"], lines:["S3","S5","S7","S9"] },
   { name: "Cottbusser Platz", types:["U"], lines:["U5"] },
-
   { name: "Dahlem-Dorf", types:["U"], lines:["U3"] },
   { name: "Deutsche Oper", types:["U"], lines:["U2"] },
-
   { name: "Eberswalder Straße", types:["U"], lines:["U2"] },
   { name: "Eichborndamm", types:["S"], lines:["S25"] },
   { name: "Eisenacher Straße", types:["U"], lines:["U7"] },
   { name: "Elsterwerdaer Platz", types:["U"], lines:["U5"] },
   { name: "Ernst-Reuter-Platz", types:["U"], lines:["U2"] },
-
   { name: "Fehrbelliner Platz", types:["U"], lines:["U3","U7"] },
   { name: "Feuerbachstraße", types:["S"], lines:["S1","S25","S26"] },
   { name: "Frankfurter Allee", types:["S","U"], lines:["S41","S42","U5"] },
   { name: "Frankfurter Tor", types:["U"], lines:["U5"] },
   { name: "Franz-Neumann-Platz (Am Schäfersee) (FN)", types:["U"], lines:["U8"] },
-  { name: "Französische Straße", types:["U"], lines:["U6"] }, // geschlossen, historisch
   { name: "Freie Universität (Thielplatz)", types:["U"], lines:["U3"] },
   { name: "Friedenau", types:["S"], lines:["S1"] },
   { name: "Friedrichsfelde Ost", types:["S"], lines:["S5","S7","S75"] },
@@ -68,9 +63,8 @@ const SEED_STATIONS = [
   { name: "Friedrichstraße", types:["S","U","R"], lines:["S1","S2","S3","S5","S7","S9","U6"] },
   { name: "Friedrich-Wilhelm-Platz", types:["U"], lines:["U9"] },
   { name: "Frohnau", types:["S"], lines:["S1"] },
-
   { name: "Gehrenseestraße", types:["S"], lines:["S75"] },
-  { name: "Gesundbrunnen", types:["S","U","R"], lines:["S1","S2","S25","S26","U8"] },
+  { name: "Gesundbrunnen", types:["S","U","R"], lines:["S1","S2","S25","S26","S41","S42","U8"] },
   { name: "Gleisdreieck", types:["U"], lines:["U1","U2","U3"] },
   { name: "Gneisenaustraße", types:["U"], lines:["U7"] },
   { name: "Görlitzer Bahnhof", types:["U"], lines:["U1","U3"] },
@@ -79,9 +73,7 @@ const SEED_STATIONS = [
   { name: "Grünau", types:["S"], lines:["S8","S85","S9","S45","S46"] },
   { name: "Grünbergallee", types:["S"], lines:["S9"] },
   { name: "Grunewald", types:["S","R"], lines:["S3","S5","S7","S9"] },
-
   { name: "Güntzelstraße", types:["U"], lines:["U9"] },
-
   { name: "Hackescher Markt", types:["S"], lines:["S3","S5","S7","S9"] },
   { name: "Halemweg", types:["U"], lines:["U7"] },
   { name: "Halensee", types:["S"], lines:["S41","S42","S46"] },
@@ -105,7 +97,6 @@ const SEED_STATIONS = [
   { name: "Holzhauser Straße", types:["U"], lines:["U6"] },
   { name: "Hönow", types:["U"], lines:["U5"] },
   { name: "Humboldthain", types:["S"], lines:["S1","S2","S25","S26"] },
-  
   { name: "Innsbrucker Platz", types:["S","U"], lines:["S41","S42","S46","U4"] },
   { name: "Jakob-Kaiser-Platz", types:["U"], lines:["U7"] },
   { name: "Jannowitzbrücke", types:["S","U"], lines:["S3","S5","S7","S9","U8"] },
@@ -113,7 +104,6 @@ const SEED_STATIONS = [
   { name: "Johannisthaler Chaussee (Gropiusstadt)", types:["U"], lines:["U7"] },
   { name: "Julius-Leber-Brücke", types:["S"], lines:["S1"] },
   { name: "Jungfernheide", types:["S","U","R"], lines:["S41","S42","S46","U7"] },
-
   { name: "Kaiserdamm", types:["U"], lines:["U2"] },
   { name: "Kaiserin-Augusta-Straße", types:["U"], lines:["U6"] },
   { name: "Karl-Bonhoeffer-Nervenklinik", types:["S","U"], lines:["S25","U8"] },
@@ -134,7 +124,6 @@ const SEED_STATIONS = [
   { name: "Kurfürstendamm", types:["U"], lines:["U1","U9"] },
   { name: "Kurfürstenstraße", types:["U"], lines:["U1"] },
   { name: "Kurt-Schumacher-Platz", types:["U"], lines:["U6"] },
-
   { name: "Landsberger Allee", types:["S"], lines:["S8","S85","S41","S42"] },
   { name: "Lankwitz", types:["S"], lines:["S25"] },
   { name: "Leinestraße", types:["U"], lines:["U8"] },
@@ -147,7 +136,6 @@ const SEED_STATIONS = [
   { name: "Lindauer Allee", types:["U"], lines:["U8"] },
   { name: "Lipschitzallee", types:["U"], lines:["U7"] },
   { name: "Louis-Lewin-Straße", types:["U"], lines:["U5"] },
-
   { name: "Magdalenenstraße", types:["U"], lines:["U5"] },
   { name: "Mahlsdorf", types:["S","R"], lines:["S5"] },
   { name: "Marienfelde", types:["S"], lines:["S2"] },
@@ -164,7 +152,6 @@ const SEED_STATIONS = [
   { name: "Mohrenstraße", types:["U"], lines:["U2"] },
   { name: "Moritzplatz", types:["U"], lines:["U8"] },
   { name: "Museumsinsel", types:["U"], lines:["U5"] },
-
   { name: "Naturkundemuseum", types:["U"], lines:["U6"] },
   { name: "Nauener Platz", types:["U"], lines:["U9"] },
   { name: "Neukölln", types:["S","U"], lines:["S41","S42","S45","S46","S47","U7"] },
@@ -173,7 +160,6 @@ const SEED_STATIONS = [
   { name: "Nollendorfplatz", types:["U"], lines:["U1","U2","U3","U4"] },
   { name: "Nordbahnhof", types:["S"], lines:["S1","S2","S25","S26"] },
   { name: "Nürnberger Platz", types:["U"], lines:["U3"] },
-
   { name: "Oberspree", types:["S"], lines:["S47"] },
   { name: "Olympiastadion", types:["S"], lines:["S3","S9"] },
   { name: "Onkel Toms Hütte", types:["U"], lines:["U3"] },
@@ -185,7 +171,6 @@ const SEED_STATIONS = [
   { name: "Ostbahnhof", types:["S","R"], lines:["S3","S5","S7","S9"] },
   { name: "Ostkreuz", types:["S","R"], lines:["S3","S41","S42","S8","S85"] },
   { name: "Otisstraße", types:["U"], lines:["U6"] },
-  
   { name: "Pankow", types:["S","U"], lines:["S2","S8","S85","U2"] },
   { name: "Pankow-Heinersdorf", types:["S"], lines:["S2","S8","S85"] },
   { name: "Pankstraße", types:["U"], lines:["U8"] },
@@ -202,7 +187,6 @@ const SEED_STATIONS = [
   { name: "Prenzlauer Allee", types:["S"], lines:["S8","S85","S41","S42"] },
   { name: "Priesterweg", types:["S"], lines:["S2","S25","S26"] },
   { name: "Prinzenstraße", types:["U"], lines:["U1","U3"] },
-
   { name: "Rahnsdorf", types:["S"], lines:["S3"] },
   { name: "Raoul-Wallenberg-Straße", types:["S"], lines:["S7"] },
   { name: "Rathaus Neukölln", types:["U"], lines:["U7"] },
@@ -221,7 +205,6 @@ const SEED_STATIONS = [
   { name: "Rudow", types:["U"], lines:["U7"] },
   { name: "Ruhleben", types:["U"], lines:["U2"] },
   { name: "Rummelsburg", types:["S"], lines:["S3"] },
-
   { name: "Samariterstraße", types:["U"], lines:["U5"] },
   { name: "Savignyplatz", types:["S"], lines:["S3","S5","S7","S9"] },
   { name: "Scharnweberstraße", types:["U"], lines:["U6"] },
@@ -237,7 +220,6 @@ const SEED_STATIONS = [
   { name: "Schönleinstraße", types:["U"], lines:["U8"] },
   { name: "Schulzendorf", types:["S"], lines:["S85"] },
   { name: "Schwartzkopffstraße", types:["U"], lines:["U6"] },
-
   { name: "Seestraße", types:["U"], lines:["U6"] },
   { name: "Senefelderplatz", types:["U"], lines:["U2"] },
   { name: "Siemensdamm", types:["U"], lines:["U7"] },
@@ -257,23 +239,19 @@ const SEED_STATIONS = [
   { name: "Südkreuz", types:["S","R"], lines:["S2","S25","S26"] },
   { name: "Südstern", types:["U"], lines:["U7"] },
   { name: "Sundgauer Straße", types:["S"], lines:["S1"] },
-
   { name: "Tegel", types:["S"], lines:["S25"] },
   { name: "Tempelhof", types:["S","U"], lines:["S41","S42","S45","S46","U6"] },
   { name: "Theodor-Heuss-Platz", types:["U"], lines:["U2"] },
   { name: "Tiergarten", types:["S"], lines:["S3","S5","S7","S9"] },
   { name: "Tierpark", types:["U"], lines:["U5"] },
   { name: "Treptower Park", types:["S"], lines:["S8","S85","S9","S41","S42"] },
-  { name: "Turmstraße", types:["U"], lines:["U5"] },
-
+  { name: "Turmstraße", types:["U"], lines:["U9"] },
   { name: "Uhlandstraße", types:["U"], lines:["U1"] },
   { name: "Ullsteinstraße", types:["U"], lines:["U6"] },
   { name: "Unter den Linden", types:["U"], lines:["U5","U6"] },
-
   { name: "Viktoria-Luise-Platz", types:["U"], lines:["U4"] },
   { name: "Vinetastraße", types:["U"], lines:["U2"] },
   { name: "Voltastraße", types:["U"], lines:["U8"] },
-
   { name: "Waidmannslust", types:["S"], lines:["S1"] },
   { name: "Walther-Schreiber-Platz", types:["U"], lines:["U9"] },
   { name: "Wannsee", types:["S","R"], lines:["S1","S7"] },
@@ -295,9 +273,7 @@ const SEED_STATIONS = [
   { name: "Wuhletal", types:["S","U"], lines:["S5","U5"] },
   { name: "Wuhlheide", types:["S"], lines:["S3"] },
   { name: "Wutzkyallee", types:["U"], lines:["U7"] },
-
   { name: "Yorckstraße", types:["S","U"], lines:["S1","S2","S25","S26","U7"] },
-
   { name: "Zehlendorf", types:["S"], lines:["S1"] },
   { name: "Zitadelle", types:["U"], lines:["U7"] },
   { name: "Zoologischer Garten", types:["S","U","R"], lines:["S3","S5","S7","S9","U2","U9"] },
