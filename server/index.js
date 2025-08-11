@@ -50,6 +50,15 @@ const server = http.createServer(async (req,res)=>{
     const {data} = await parseBody(req); db.data[user.id]=data; saveDb();
     res.end(JSON.stringify({success:true}));
   }
+  else if (req.method==='POST' && pathname==='/api/password'){
+    const user=auth(req); if(!user){ res.writeHead(401); return res.end(JSON.stringify({error:'noauth'})); }
+    const {oldPassword,newPassword} = await parseBody(req);
+    if(!oldPassword || !newPassword){ res.writeHead(400); return res.end(JSON.stringify({error:'missing'})); }
+    const u=db.users.find(u=>u.id===user.id);
+    if(!u || !verifyPassword(oldPassword,u.password)){ res.writeHead(400); return res.end(JSON.stringify({error:'invalid'})); }
+    u.password=hashPassword(newPassword); saveDb();
+    res.end(JSON.stringify({success:true}));
+  }
   else if (req.method==='DELETE' && pathname==='/api/account'){
     const user=auth(req); if(!user){ res.writeHead(401); return res.end(JSON.stringify({error:'noauth'})); }
     db.users = db.users.filter(u=>u.id!==user.id);
@@ -67,3 +76,4 @@ const server = http.createServer(async (req,res)=>{
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => console.log('Server listening on '+PORT));
+export default server;

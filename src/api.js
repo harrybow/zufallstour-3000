@@ -38,3 +38,7 @@ export async function deleteAccount(token){
   const res = await fetch('/api/account', {method:'DELETE', headers:{'Authorization':`Bearer ${token}`}});
   if(!res.ok) throw new Error('Delete failed');
 }
+export async function changePassword(token, oldPassword, newPassword){
+  const res = await fetch('/api/password', {method:'POST', headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`}, body: JSON.stringify({oldPassword, newPassword})});
+  if(!res.ok) throw new Error('Change password failed');
+}
