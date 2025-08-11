@@ -167,19 +167,29 @@ export default function App(){
   }, [stations]);
   const photoCount = useMemo(()=> stations.reduce((acc,s)=> acc + s.visits.reduce((sum,v)=> sum + (v.photos?.length||0),0),0), [stations]);
 
-  function handleLogin(tok){ setToken(tok); }
-  function handleLogout(){ apiLogout(); setToken(null); }
+  function handleLogin(tok){
+    try { localStorage.removeItem(STORAGE_KEY); } catch { /* ignore */ }
+    setStations(makeSeed());
+    setToken(tok);
+  }
+  async function handleLogout(){
+    const current = token;
+    try { if (current) await apiLogout(current); } catch { /* ignore */ }
+    try { localStorage.removeItem(STORAGE_KEY); } catch { /* ignore */ }
+    setStations(makeSeed());
+    setToken(null);
+  }
   async function confirmDeleteAccount(){
     if(!token) return;
     try{
       await deleteAccount(token);
-  }catch{
+    }catch{
       alert('Konto löschen fehlgeschlagen');
       return;
     }
     try{ localStorage.removeItem(STORAGE_KEY); }catch{ /* ignore */ }
     setStations(makeSeed());
-    apiLogout();
+    try { await apiLogout(token); } catch { /* ignore */ }
     setShowDeleteAccount(false);
     setToken(null);
   }

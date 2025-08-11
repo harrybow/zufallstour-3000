@@ -32,6 +32,15 @@ const server = http.createServer(async (req,res)=>{
     const token=randomBytes(24).toString('hex'); db.sessions[token]=user.id; saveDb();
     res.end(JSON.stringify({token}));
   }
+  else if (req.method==='POST' && pathname==='/api/logout'){
+    const authHeader=req.headers['authorization'];
+    if(authHeader){
+      const token=authHeader.split(' ')[1];
+      delete db.sessions[token];
+      saveDb();
+    }
+    res.end(JSON.stringify({success:true}));
+  }
   else if (req.method==='GET' && pathname==='/api/data'){
     const user=auth(req); if(!user){ res.writeHead(401); return res.end(JSON.stringify({error:'noauth'})); }
     res.end(JSON.stringify({data: db.data[user.id] || null}));
