@@ -1,5 +1,24 @@
+// Cache resolved location ids so we don't hit the /locations endpoint repeatedly
+const cache = new Map();
+
+async function resolve(loc){
+  if(!loc) return null;
+  // Coordinates or already an id
+  if(/^\d{6,}$/.test(loc) || /^-?\d+(?:\.\d+)?,-?\d+(?:\.\d+)?$/.test(loc)) return loc;
+  if(cache.has(loc)) return cache.get(loc);
+  const url = `https://v5.vbb.transport.rest/locations?query=${encodeURIComponent(loc)}&results=1`;
+  const res = await fetch(url);
+  if(!res.ok) return null;
+  const data = await res.json().catch(()=>null);
+  const id = data?.[0]?.id;
+  if(id) cache.set(loc, id);
+  return id || null;
+}
+
 export async function fetchJourneyDuration(from, to){
-  const url = `https://v5.vbb.transport.rest/journeys?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}&results=1&language=de`;
+  const [fromId, toId] = await Promise.all([resolve(from), resolve(to)]);
+  if(!fromId || !toId) return null;
+  const url = `https://v5.vbb.transport.rest/journeys?from=${encodeURIComponent(fromId)}&to=${encodeURIComponent(toId)}&results=1&language=de`;
   const res = await fetch(url);
   if (!res.ok) return null;
   const data = await res.json().catch(()=>null);
