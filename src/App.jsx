@@ -339,7 +339,7 @@ export default function App(){
               <div className="font-extrabold text-sm">Fortschritt</div>
               <div className="text-xs opacity-80">{visitedCount}/{total} ({percent}%)</div>
               <div className="text-xs opacity-80 flex items-center gap-1"><Camera size={12}/> {photoCount}</div>
-              <button onClick={()=>setShowMilestones(true)} className="ml-auto text-xs px-2 py-1 rounded-full border-2 border-black bg-white flex items-center gap-1"><Trophy size={14}/> Meilensteine</button>
+              <button onClick={()=>setShowMilestones(true)} className="ml-auto text-xs px-2 py-1 rounded-full bg-white flex items-center gap-1"><Trophy size={14}/> Meilensteine</button>
             </div>
             <div onClick={()=>setShowMilestones(true)} className="relative h-4 rounded-full border-4 border-black bg-white cursor-pointer">
               <div className="h-full bg-green-500" style={{width:`${Math.max(4,percent)}%`}} />
@@ -350,12 +350,12 @@ export default function App(){
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-            <button onClick={doRoll} className={`w-full justify-center px-6 py-3 rounded-full text-xl font-black bg-gradient-to-r from-fuchsia-500 via-pink-500 to-orange-400 text-white border-4 border-black shadow-[6px_6px_0_0_rgba(0,0,0,0.6)] active:translate-y-[2px] active:shadow-[4px_4px_0_0_rgba(0,0,0,0.6)] flex items-center`} style={denyShake?{animation:"shake .6s"}:{}}>
+            <button onClick={doRoll} className={`w-full justify-center px-6 py-3 rounded-full text-xl font-black bg-gradient-to-r from-fuchsia-500 via-pink-500 to-orange-400 text-white flex items-center`} style={denyShake?{animation:"shake .6s"}:{}}>
               <span className="inline-flex items-center gap-2 mx-auto"><Shuffle size={22}/> WÜRFELN</span>
             </button>
-            <button onClick={()=>setPage('visited')} className="w-full justify-center px-4 py-3 rounded-full font-bold bg-white text-black flex items-center gap-2 border-4 border-black shadow hover:brightness-110 active:translate-y-[1px]">Besuchte Bahnhöfe</button>
-            <button onClick={()=>setPage('stations')} className="w-full justify-center px-4 py-3 rounded-full font-bold bg-white text-black flex items-center gap-2 border-4 border-black shadow hover:brightness-110 active:translate-y-[1px]">Alle Bahnhöfe</button>
-            <button onClick={()=>setShowSettings(true)} className="w-full justify-center px-4 py-3 rounded-full font-bold bg-black text-white flex items-center border-4 border-black shadow" aria-label="Einstellungen" title="Einstellungen"><SettingsIcon size={20}/></button>
+            <button onClick={()=>setPage('visited')} className="w-full justify-center px-4 py-3 rounded-full font-bold bg-white text-black flex items-center gap-2 hover:brightness-110">Besuchte Bahnhöfe</button>
+            <button onClick={()=>setPage('stations')} className="w-full justify-center px-4 py-3 rounded-full font-bold bg-white text-black flex items-center gap-2 hover:brightness-110">Alle Bahnhöfe</button>
+            <button onClick={()=>setShowSettings(true)} className="w-full justify-center px-4 py-3 rounded-full font-bold bg-black text-white flex items-center" aria-label="Einstellungen" title="Einstellungen"><SettingsIcon size={20}/></button>
           </div>
 
           {lastVisitDate && (<div className="mt-3 text-sm opacity-80">Letzter Besuch: <b>{formatDate(lastVisitDate)}</b></div>)}
@@ -447,7 +447,7 @@ export default function App(){
         <Modal open={showDeleteAccount} onClose={()=>setShowDeleteAccount(false)} title="Konto löschen">
           <div className="space-y-3">
             <p className="text-sm">Willst du dein Konto dauerhaft löschen? Alle Daten werden entfernt.</p>
-            <div className="flex gap-2 justify-end"><button onClick={()=>setShowDeleteAccount(false)} className="px-4 py-2 rounded-lg bg-white border-2 border-black">Abbrechen</button><button onClick={confirmDeleteAccount} className="px-4 py-2 rounded-lg bg-red-600 text-white border-2 border-black">Löschen</button></div>
+            <div className="flex gap-2 justify-end"><button onClick={()=>setShowDeleteAccount(false)} className="px-4 py-2 rounded-lg bg-white">Abbrechen</button><button onClick={confirmDeleteAccount} className="px-4 py-2 rounded-lg bg-red-600 text-white">Löschen</button></div>
           </div>
         </Modal>
 
@@ -543,16 +543,16 @@ function StationsPage({ stations, onBack }){
           <button
             key={t}
             onClick={()=>toggleType(t)}
-            className={`px-3 py-1 rounded-full border-2 border-black ${typeFilter[t]?"bg-black text-white":"bg-white"}`}
+            className={`px-3 py-1 rounded-full ${typeFilter[t]?"bg-black text-white":"bg-white"}`}
           >{t}</button>
         ))}
         <button
           onClick={()=>setOnlyUnvisited(v=>!v)}
-          className={`px-3 py-1 rounded-full border-2 border-black ${onlyUnvisited?"bg-black text-white":"bg-white"}`}
+          className={`px-3 py-1 rounded-full ${onlyUnvisited?"bg-black text-white":"bg-white"}`}
         >Noch nie besucht</button>
         <button
           onClick={()=>setSortOldest(s=>!s)}
-          className={`px-3 py-1 rounded-full border-2 border-black ${sortOldest?"bg-black text-white":"bg-white"}`}
+          className={`px-3 py-1 rounded-full ${sortOldest?"bg-black text-white":"bg-white"}`}
         >Am längsten her</button>
       </div>
 
@@ -561,7 +561,7 @@ function StationsPage({ stations, onBack }){
         {sorted.map(st => (
           <div
             key={st.id}
-            className={`p-2 border-2 border-black rounded-lg ${st.visits.length ? 'bg-[#8c4bd6] text-white' : 'bg-white'}`}
+            className={`p-2 border-4 border-black rounded-lg ${st.visits.length ? 'bg-[#8c4bd6] text-white' : 'bg-white'}`}
           >
             <div className="font-bold truncate">{st.name}</div>
             <LineChips lines={st.lines} types={st.types} />
@@ -622,7 +622,7 @@ function VisitedPage({ stations, onBack, onAddVisit, onClearVisits, onAttachPhot
         <div>{sortLabels[sortKey]}</div>
           <button
             onClick={cycleSortKey}
-            className="p-1 rounded-lg border-2 border-black bg-white"
+            className="p-1 rounded-lg bg-white"
             title="Sortierung ändern"
             type="button"
           >
@@ -631,7 +631,7 @@ function VisitedPage({ stations, onBack, onAddVisit, onClearVisits, onAttachPhot
         </div>
       </div>
 
-      {manualOpen ? (<ManualVisitForm stations={unvisited} onAdd={onAddVisit} onCancel={()=>setManualOpen(false)} />) : (<button onClick={()=>setManualOpen(true)} className="w-full px-6 py-4 rounded-2xl text-xl font-black bg-gradient-to-r from-fuchsia-500 via-pink-500 to-orange-400 text-white border-4 border-black shadow-[6px_6px_0_rgba(0,0,0,0.6)] active:translate-y-[2px] active:shadow-[4px_4px_0_rgba(0,0,0,0.6)]">Besuch hinzufügen</button>)}
+      {manualOpen ? (<ManualVisitForm stations={unvisited} onAdd={onAddVisit} onCancel={()=>setManualOpen(false)} />) : (<button onClick={()=>setManualOpen(true)} className="w-full px-6 py-4 rounded-2xl text-xl font-black bg-gradient-to-r from-fuchsia-500 via-pink-500 to-orange-400 text-white">Besuch hinzufügen</button>)}
 
       <div className="mt-4 pr-1 space-y-4">
         {visitedSorted.length===0 ? (<div className="text-sm">Noch keine Besuche eingetragen.</div>) : (
@@ -643,7 +643,7 @@ function VisitedPage({ stations, onBack, onAddVisit, onClearVisits, onAttachPhot
                   <LineChips lines={st.lines} types={st.types} />
                   <div className="text-xs mt-1">Zuletzt am <b>{formatDate(st.visits[st.visits.length-1].date)}</b></div>
                 </div>
-                <div className="shrink-0"><button type="button" onClick={()=>setConfirmId(st.id)} className="w-9 h-9 rounded-full bg-red-500 text-white border-2 border-black flex items-center justify-center" title="Besuch(e) löschen"><Trash2 size={16}/></button></div>
+                <div className="shrink-0"><button type="button" onClick={()=>setConfirmId(st.id)} className="w-9 h-9 rounded-full bg-red-500 text-white flex items-center justify-center" title="Besuch(e) löschen"><Trash2 size={16}/></button></div>
               </div>
               <div className="mt-2 grid grid-cols-1 gap-2">
                 {st.visits.map((v,idx)=> (
@@ -659,8 +659,8 @@ function VisitedPage({ stations, onBack, onAddVisit, onClearVisits, onAttachPhot
                           placeholder="Notiz"
                         />
                         <div className="flex gap-2 justify-end">
-                          <button onClick={cancelEdit} className="px-3 py-1 rounded-lg bg-white border-2 border-black text-xs">Abbrechen</button>
-                          <button onClick={saveEdit} className="px-3 py-1 rounded-lg bg-black text-white border-2 border-black text-xs">Speichern</button>
+                          <button onClick={cancelEdit} className="px-3 py-1 rounded-lg bg-white text-xs">Abbrechen</button>
+                          <button onClick={saveEdit} className="px-3 py-1 rounded-lg bg-black text-white text-xs">Speichern</button>
                         </div>
                       </div>
                     ) : (
@@ -669,7 +669,7 @@ function VisitedPage({ stations, onBack, onAddVisit, onClearVisits, onAttachPhot
                           <div className="flex-1 break-words">{v.note}</div>
                           <button
                             title="Notiz bearbeiten"
-                            className="shrink-0 p-1 rounded-md border-2 border-black bg-white"
+                            className="shrink-0 p-1 rounded-md bg-white"
                             onClick={()=>startEdit(st.id, idx, v.note)}
                           >
                             <Pencil size={14}/>
@@ -677,7 +677,7 @@ function VisitedPage({ stations, onBack, onAddVisit, onClearVisits, onAttachPhot
                         </div>
                       ) : (
                         <button
-                          className="w-full rounded-md border-2 border-dashed border-black px-2 py-1 text-xs bg-white/70 text-left"
+                          className="w-full rounded-md border-dashed px-2 py-1 text-xs bg-white/70 text-left"
                           onClick={()=>startEdit(st.id, idx, "")}
                         >
                           Notiz hinzufügen ✍️
@@ -689,14 +689,14 @@ function VisitedPage({ stations, onBack, onAddVisit, onClearVisits, onAttachPhot
                       {(v.photos || []).map((p,pidx)=> (
                         <button
                           key={pidx}
-                          className="w-full h-64 rounded-xl overflow-hidden border-2 border-black bg-white"
+                          className="w-full h-64 rounded-xl overflow-hidden bg-white"
                           onClick={()=>setZoom({src:p, station:st.name, date:v.date})}
                         >
                           <img src={p} alt="Foto" className="w-full h-full object-contain"/>
                         </button>
                       ))}
                       <button
-                        className="w-full aspect-square rounded-xl border-2 border-dashed border-black flex items-center justify-center bg-white"
+                        className="w-full aspect-square rounded-xl border-dashed flex items-center justify-center bg-white"
                         onClick={()=>{ setPendingPhoto({stationId:st.id, index:idx}); fileRef.current?.click(); }}
                       >
                         <ImageUp size={24}/>
@@ -714,7 +714,7 @@ function VisitedPage({ stations, onBack, onAddVisit, onClearVisits, onAttachPhot
       <Modal open={!!confirmId} onClose={()=>setConfirmId(null)} title="Besuche löschen">
         <div className="space-y-3">
           <p className="text-sm">Diesen Bahnhof als <b>unbesucht</b> markieren? Alle Besuchseinträge werden entfernt.</p>
-          <div className="flex gap-2 justify-end"><button onClick={()=>setConfirmId(null)} className="px-4 py-2 rounded-lg bg-white border-2 border-black">Abbrechen</button><button onClick={()=>{ onClearVisits(confirmId); setConfirmId(null); }} className="px-4 py-2 rounded-lg bg-red-600 text-white border-2 border-black">Löschen</button></div>
+          <div className="flex gap-2 justify-end"><button onClick={()=>setConfirmId(null)} className="px-4 py-2 rounded-lg bg-white">Abbrechen</button><button onClick={()=>{ onClearVisits(confirmId); setConfirmId(null); }} className="px-4 py-2 rounded-lg bg-red-600 text-white">Löschen</button></div>
         </div>
       </Modal>
 
@@ -732,7 +732,7 @@ function ChangePasswordForm({ onSave, onCancel }){
     <div className="space-y-3">
       <div><label className="font-bold text-sm">Altes Passwort</label><input type="password" value={oldPw} onChange={e=>setOldPw(e.target.value)} className="w-full mt-1 px-3 py-2 rounded-lg border-4 border-black bg-white"/></div>
       <div><label className="font-bold text-sm">Neues Passwort</label><input type="password" value={newPw} onChange={e=>setNewPw(e.target.value)} className="w-full mt-1 px-3 py-2 rounded-lg border-4 border-black bg-white"/></div>
-      <div className="flex gap-2 justify-end"><button onClick={onCancel} className="px-4 py-2 rounded-lg bg-white border-2 border-black">Abbrechen</button><button onClick={()=>onSave(oldPw, newPw)} className="px-4 py-2 rounded-lg bg-black text-white border-2 border-black">Speichern</button></div>
+      <div className="flex gap-2 justify-end"><button onClick={onCancel} className="px-4 py-2 rounded-lg bg-white">Abbrechen</button><button onClick={()=>onSave(oldPw, newPw)} className="px-4 py-2 rounded-lg bg-black text-white">Speichern</button></div>
     </div>
   );
 }

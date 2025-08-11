@@ -13,7 +13,11 @@ export default function ZoomBox({ src }){
   const reset = () => { setScale(1); setPos({x:0,y:0}); };
   return (
     <div className="relative w-full h-[70vh] bg-white rounded-xl border-4 border-black overflow-hidden">
-      <div className="absolute top-2 right-2 z-10 flex gap-2"><button onClick={() => setScale(s=>Math.min(5,s*1.1))} className="px-3 py-1 rounded-lg border-2 border-black bg-white">+</button><button onClick={() => setScale(s=>Math.max(1,s/1.1))} className="px-3 py-1 rounded-lg border-2 border-black bg-white">-</button><button onClick={reset} className="px-3 py-1 rounded-lg border-2 border-black bg-white">Reset</button></div>
+      <div className="absolute top-2 right-2 z-10 flex gap-2">
+        <button onClick={() => setScale(s=>Math.min(5,s*1.1))} className="px-3 py-1 rounded-lg bg-white">+</button>
+        <button onClick={() => setScale(s=>Math.max(1,s/1.1))} className="px-3 py-1 rounded-lg bg-white">-</button>
+        <button onClick={reset} className="px-3 py-1 rounded-lg bg-white">Reset</button>
+      </div>
       <div ref={wrapRef} onWheel={onWheel} onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp} className="w-full h-full flex items-center justify-center touch-none cursor-grab active:cursor-grabbing">
         <img src={src} alt="Zoom" style={{ transform:`translate(${pos.x}px, ${pos.y}px) scale(${scale})` }} className="max-w-none max-h-none" />
       </div>
