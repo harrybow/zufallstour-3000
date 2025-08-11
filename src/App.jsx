@@ -84,6 +84,7 @@ const normName = (s) => String(s||"")
 export default function App(){
   const { t, lang, setLang } = useI18n();
   const [token, setToken] = useState(()=>localStorage.getItem('authToken'));
+  const [username, setUsername] = useState(()=>localStorage.getItem('authUsername') || "");
   const [stations, setStations] = useState/** @type {Station[]} */(()=>{ try{ const raw=localStorage.getItem(STORAGE_KEY); if(raw) return normalizeStations(JSON.parse(raw));}catch{ /* ignore */ } return makeSeed(); });
   const [page, setPage] = useState/** @type {"home"|"visited"|"stations"} */("home");
   const [rolled, setRolled] = useState/** @type {string[]} */([]);
@@ -166,10 +167,12 @@ export default function App(){
   }, [stations]);
   const photoCount = useMemo(()=> stations.reduce((acc,s)=> acc + s.visits.reduce((sum,v)=> sum + (v.photos?.length||0),0),0), [stations]);
 
-  function handleLogin(tok){
+  function handleLogin(tok, user){
     try { localStorage.removeItem(STORAGE_KEY); } catch { /* ignore */ }
     setStations(makeSeed());
     setToken(tok);
+    setUsername(user);
+    try { localStorage.setItem('authUsername', user); } catch { /* ignore */ }
   }
   async function handleLogout(){
     const current = token;
@@ -177,6 +180,8 @@ export default function App(){
     try { localStorage.removeItem(STORAGE_KEY); } catch { /* ignore */ }
     setStations(makeSeed());
     setToken(null);
+    setUsername("");
+    try { localStorage.removeItem('authUsername'); } catch { /* ignore */ }
   }
   async function confirmDeleteAccount(){
     if(!token) return;
@@ -191,6 +196,8 @@ export default function App(){
     try { await apiLogout(token); } catch { /* ignore */ }
     setShowDeleteAccount(false);
     setToken(null);
+    setUsername("");
+    try { localStorage.removeItem('authUsername'); } catch { /* ignore */ }
   }
 
   async function submitChangePassword(oldPw, newPw){
@@ -418,6 +425,7 @@ export default function App(){
           </div>
           <div className="mt-4 rounded-2xl border-4 border-black p-4 bg-white/80">
             <h3 className="font-extrabold text-lg mb-2">{t('settings.account')}</h3>
+            {username && (<div className="mb-2 text-sm">{t('settings.account.loggedInAs')} <b>{username}</b></div>)}
             <div className="flex flex-col sm:flex-row gap-2 w-full">
               <button
                 onClick={()=>setShowChangePassword(true)}

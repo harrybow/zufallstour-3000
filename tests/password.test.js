@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import * as register from '../functions/api/register.js';
-import * as login from '../functions/api/login.js';
-import * as password from '../functions/api/password.js';
+import { onRequestPost as register } from '../functions/api/register.js';
+import { onRequestPost as login } from '../functions/api/login.js';
+import { onRequestPost as password } from '../functions/api/password.js';
 
 function makeEnv(){
   const store = {};
@@ -32,20 +32,20 @@ beforeEach(() => {
 
 describe('password change', () => {
   it('changes password and rejects old password', async () => {
-    let res = await register(makeRequest('/api/register', 'POST', { username: 'alice', password: 'oldpw' }), env);
+    let res = await register({ request: makeRequest('/api/register', 'POST', { username: 'alice', password: 'oldpw' }), env });
     expect(res.status).toBe(200);
 
-    res = await login(makeRequest('/api/login', 'POST', { username: 'alice', password: 'oldpw' }), env);
+    res = await login({ request: makeRequest('/api/login', 'POST', { username: 'alice', password: 'oldpw' }), env });
     expect(res.status).toBe(200);
     const { token } = await res.json();
 
-    res = await password(makeRequest('/api/password', 'POST', { oldPassword: 'oldpw', newPassword: 'newpw' }, token), env);
+    res = await password({ request: makeRequest('/api/password', 'POST', { oldPassword: 'oldpw', newPassword: 'newpw' }, token), env });
     expect(res.status).toBe(200);
 
-    res = await login(makeRequest('/api/login', 'POST', { username: 'alice', password: 'newpw' }), env);
+    res = await login({ request: makeRequest('/api/login', 'POST', { username: 'alice', password: 'newpw' }), env });
     expect(res.status).toBe(200);
 
-    res = await login(makeRequest('/api/login', 'POST', { username: 'alice', password: 'oldpw' }), env);
+    res = await login({ request: makeRequest('/api/login', 'POST', { username: 'alice', password: 'oldpw' }), env });
     expect(res.status).toBe(401);
   });
 });
