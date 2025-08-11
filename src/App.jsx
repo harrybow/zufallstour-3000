@@ -11,6 +11,7 @@ import ManualVisitForm from "./components/ManualVisitForm";
 import ZoomBox from "./components/ZoomBox";
 import Login from "./Login";
 import { fetchData, saveData, logout as apiLogout } from "./api.js";
+import ChangePassword from "./ChangePassword";
 
 // Helpers & Types
 const STORAGE_KEY = "zufallstour3000.v4";
@@ -376,6 +377,7 @@ export default function App(){
             </label>
             <p className="text-xs mt-1 opacity-80">Deaktivieren, um ohne „srsly?“-Hinweis schnell zu würfeln.</p>
           </div>
+          <ChangePassword />
         </Modal>
 
         <Modal open={exportDialog.open} onClose={()=>{ try{ URL.revokeObjectURL(exportDialog.href);}catch{ /* ignore */ } setExportDialog(p=>({...p, open:false})); }} title="Backup exportiert">
