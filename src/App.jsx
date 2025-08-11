@@ -461,7 +461,7 @@ export default function App(){
           {addVisitFor && (<AddVisitForm onSave={addVisit} stationId={addVisitFor.id} />)}
         </Modal>
 
-        <div className="mt-10 text-center text-xs opacity-70"><p>Made with ❤ in 90s WordArt • Deine Daten bleiben im Browser (localStorage).</p></div>
+        <div className="mt-10 text-center text-xs opacity-70"><p>Made with ❤ von BrittaFan3000.</p></div>
       </div>
     </div>
   );
