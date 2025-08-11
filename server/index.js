@@ -41,6 +41,16 @@ const server = http.createServer(async (req,res)=>{
     const {data} = await parseBody(req); db.data[user.id]=data; saveDb();
     res.end(JSON.stringify({success:true}));
   }
+  else if (req.method==='DELETE' && pathname==='/api/account'){
+    const user=auth(req); if(!user){ res.writeHead(401); return res.end(JSON.stringify({error:'noauth'})); }
+    db.users = db.users.filter(u=>u.id!==user.id);
+    delete db.data[user.id];
+    for(const [t,uid] of Object.entries(db.sessions)){
+      if(uid===user.id) delete db.sessions[t];
+    }
+    saveDb();
+    res.end(JSON.stringify({success:true}));
+  }
   else {
     res.writeHead(404); res.end('not found');
   }
