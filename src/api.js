@@ -31,3 +31,16 @@ export async function fetchData(token){
 export async function saveData(token, data){
   await fetch('/api/data', {method:'POST', headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`}, body: JSON.stringify({data})});
 }
+
+export async function changePassword(oldPw, newPw){
+  const token = localStorage.getItem('authToken');
+  const res = await fetch('/api/password', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json','Authorization':`Bearer ${token}`},
+    body: JSON.stringify({ oldPassword: oldPw, newPassword: newPw })
+  });
+  if(!res.ok){
+    const data = await res.json().catch(()=>({}));
+    throw new Error(data.error || 'Change password failed');
+  }
+}

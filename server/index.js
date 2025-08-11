@@ -41,6 +41,16 @@ const server = http.createServer(async (req,res)=>{
     const {data} = await parseBody(req); db.data[user.id]=data; saveDb();
     res.end(JSON.stringify({success:true}));
   }
+  else if (req.method==='POST' && pathname==='/api/password'){
+    const user=auth(req); if(!user){ res.writeHead(401); return res.end(JSON.stringify({error:'noauth'})); }
+    const {oldPassword, newPassword} = await parseBody(req);
+    const u = db.users.find(u=>u.id===user.id);
+    if(!u || !oldPassword || !newPassword || !verifyPassword(oldPassword, u.password)){
+      res.writeHead(400); return res.end(JSON.stringify({error:'invalid'}));
+    }
+    u.password = hashPassword(newPassword); saveDb();
+    res.end(JSON.stringify({success:true}));
+  }
   else {
     res.writeHead(404); res.end('not found');
   }
