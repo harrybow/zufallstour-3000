@@ -12,7 +12,7 @@
   "settings.import": "Import",
   "settings.homeStation": "Home Station",
   "settings.homeStation.placeholder": "e.g. Berlin Central",
-  "settings.homeStation.hint": "Used for travel times if location is unavailable.",
+  "settings.homeStation.hint": "Used to calculate travel times.",
   "settings.cooldown": "Dice Cooldown",
   "settings.cooldown.label": "20-second cooldown enabled",
   "settings.cooldown.desc": "Disable to roll quickly without the “srsly?” notice.",

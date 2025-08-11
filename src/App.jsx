@@ -98,7 +98,6 @@ export default function App(){
   const [showMilestones, setShowMilestones] = useState(false);
   const [cooldownEnabled, setCooldownEnabled] = useState(()=>{ try{ return JSON.parse(localStorage.getItem(COOLDOWN_KEY) ?? "true"); }catch{ return true; }});
   const [homeStation, setHomeStation] = useState(()=>{ try{ return localStorage.getItem(HOME_KEY) || ""; }catch{ return ""; }});
-  const [coords, setCoords] = useState(null);
 
   const stationLabelFromName = (name) => {
     const n = normName(name);
@@ -137,19 +136,12 @@ export default function App(){
     }
   }, [homeStation]);
   useEffect(()=>{
-    if (typeof navigator !== 'undefined' && navigator.geolocation){
-      navigator.geolocation.getCurrentPosition(pos=>{
-        setCoords({lat:pos.coords.latitude, lon:pos.coords.longitude});
-      }, ()=>{});
-    }
-  }, []);
-  useEffect(()=>{
     if (token) {
       fetchData(token).then(data=>{ if(data) updateStations(normalizeStations(data)); }).catch(()=>setToken(null));
     }
   }, [token, updateStations]);
   const visitedIds = useMemo(()=> new Set(stations.filter(s=>s.visits.length>0).map(s=>s.id)), [stations]);
-  const origin = coords ? `${coords.lat},${coords.lon}` : (homeStation.trim() ? stationLabelFromName(homeStation.trim()) : null);
+  const origin = homeStation.trim() ? stationLabelFromName(homeStation.trim()) : null;
   const rolledStations = rolled.map(id=>stations.find(s=>s.id===id)).filter(Boolean);
   const visitedCount = visitedIds.size, total = stations.length||1, percent = Math.round((visitedCount/total)*100);
   const lastVisitDate = useMemo(()=>{ let max=""; stations.forEach(s=> s.visits.forEach(v=>{ if((v.date||"")>max) max=v.date; })); return max; }, [stations]);

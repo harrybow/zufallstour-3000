@@ -12,7 +12,7 @@
   "settings.import": "Import",
   "settings.homeStation": "Home-Station",
   "settings.homeStation.placeholder": "z.B. Berlin Hbf",
-  "settings.homeStation.hint": "Für Fahrzeiten, falls Standort nicht verfügbar.",
+  "settings.homeStation.hint": "Für die Berechnung der Fahrzeiten.",
   "settings.cooldown": "Würfel-Cooldown",
   "settings.cooldown.label": "20-Sekunden-Cooldown aktiv",
   "settings.cooldown.desc": "Deaktivieren, um ohne „srsly?“-Hinweis schnell zu würfeln.",
