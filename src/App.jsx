@@ -196,7 +196,8 @@ export default function App(){
 
   if(!token){
     return (
-      <div className="min-h-screen flex items-center justify-center bg-amber-200">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-amber-200">
+        <HeaderLogo />
         <Login onSuccess={handleLogin} />
       </div>
     );
