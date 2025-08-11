@@ -21,7 +21,10 @@ export async function login(username, password){
   }
   return data.token;
 }
-export function logout(){ localStorage.removeItem('authToken'); }
+export async function logout(token){
+  try { await fetch('/api/logout', { method: 'POST', headers: { 'Authorization': `Bearer ${token}` } }); } catch { /* ignore */ }
+  try { localStorage.removeItem('authToken'); } catch { /* ignore */ }
+}
 export async function fetchData(token){
   const res = await fetch('/api/data', {headers:{'Authorization':`Bearer ${token}`}});
   if(!res.ok) return null;
