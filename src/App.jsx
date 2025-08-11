@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { Settings as SettingsIcon, Shuffle, MapPin, Camera, Upload, Download, Trash2, ArrowUpDown, Check, ChevronLeft, Trophy, Pencil, ImageUp, KeyRound, LogOut } from "lucide-react";
 import { fetchJourneyDuration } from "./journeys";
@@ -104,11 +104,11 @@ export default function App(){
     return st ? stationLabel(st) : name;
   };
 
-  function updateStations(updater){
+  const updateStations = useCallback((updater) => {
     setStations(prev => {
       const next = typeof updater === 'function' ? updater(prev) : updater;
-      if(token){
-        saveData(token, next).catch(()=>{});
+      if (token) {
+        saveData(token, next).catch(() => {});
       } else {
         try {
           localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
@@ -118,7 +118,7 @@ export default function App(){
       }
       return next;
     });
-  }
+  }, [token]);
 
   useEffect(()=>{
     try {
@@ -142,10 +142,10 @@ export default function App(){
     }
   }, []);
   useEffect(()=>{
-    if(token){
+    if (token) {
       fetchData(token).then(data=>{ if(data) updateStations(normalizeStations(data)); }).catch(()=>setToken(null));
     }
-  }, [token]);
+  }, [token, updateStations]);
   const visitedIds = useMemo(()=> new Set(stations.filter(s=>s.visits.length>0).map(s=>s.id)), [stations]);
   const origin = coords ? `${coords.lat},${coords.lon}` : (homeStation.trim() ? stationLabelFromName(homeStation.trim()) : null);
   const rolledStations = rolled.map(id=>stations.find(s=>s.id===id)).filter(Boolean);
@@ -343,7 +343,7 @@ export default function App(){
               <div className="font-extrabold text-sm">Fortschritt</div>
               <div className="text-xs opacity-80">{visitedCount}/{total} ({percent}%)</div>
               <div className="text-xs opacity-80 flex items-center gap-1"><Camera size={12}/> {photoCount}</div>
-              <button onClick={()=>setShowMilestones(true)} className="ml-auto text-xs px-2 py-1 rounded-full bg-white flex items-center gap-1"><Trophy size={14}/> Meilensteine</button>
+              <button onClick={()=>setShowMilestones(true)} className="ml-auto text-xs px-2 py-1 rounded-full border-4 border-black bg-white flex items-center gap-1"><Trophy size={14}/> Meilensteine</button>
             </div>
             <div onClick={()=>setShowMilestones(true)} className="relative h-4 rounded-full border-4 border-black bg-white cursor-pointer">
               <div className="h-full bg-green-500" style={{width:`${Math.max(4,percent)}%`}} />
@@ -673,7 +673,7 @@ function VisitedPage({ stations, onBack, onAddVisit, onClearVisits, onAttachPhot
                           <div className="flex-1 break-words">{v.note}</div>
                           <button
                             title="Notiz bearbeiten"
-                            className="shrink-0 p-1 rounded-md bg-white"
+                            className="shrink-0 p-1 rounded-md bg-white border-2 shadow-none active:shadow-none active:translate-y-0"
                             onClick={()=>startEdit(st.id, idx, v.note)}
                           >
                             <Pencil size={14}/>
@@ -681,7 +681,7 @@ function VisitedPage({ stations, onBack, onAddVisit, onClearVisits, onAttachPhot
                         </div>
                       ) : (
                         <button
-                          className="w-full rounded-md border-dashed px-2 py-1 text-xs bg-white/70 text-left"
+                          className="w-full rounded-md border-2 border-dashed px-2 py-1 text-xs bg-white/70 text-left shadow-none active:shadow-none active:translate-y-0"
                           onClick={()=>startEdit(st.id, idx, "")}
                         >
                           Notiz hinzufügen ✍️
@@ -700,7 +700,7 @@ function VisitedPage({ stations, onBack, onAddVisit, onClearVisits, onAttachPhot
                         </button>
                       ))}
                       <button
-                        className="w-full aspect-square rounded-xl border-dashed flex items-center justify-center bg-white"
+                        className="w-full aspect-square rounded-xl border-2 border-dashed flex items-center justify-center bg-white shadow-none active:shadow-none active:translate-y-0"
                         onClick={()=>{ setPendingPhoto({stationId:st.id, index:idx}); fileRef.current?.click(); }}
                       >
                         <ImageUp size={24}/>
@@ -751,7 +751,7 @@ function AddVisitForm({ stationId, onSave }){
   return (
     <div className="space-y-3">
       <div><label className="font-bold text-sm">Datum</label><input type="date" value={date} onChange={e=>setDate(e.target.value)} className="w-full mt-1 px-3 py-2 rounded-lg border-4 border-black bg-white"/></div>
-      <div><label className="font-bold text-sm">Notiz (optional)</label><textarea value={note} onChange={e=>setNote(e.target.value)} rows={3} className="w-full mt-1 px-3 py-2 rounded-lg border-4 border-black bg-white" placeholder="z.B. Sonnenuntergang auf der Brücke 🌇"/></div>
+      <div><label className="font-bold text-sm">Notiz (optional)</label><textarea value={note} onChange={e=>setNote(e.target.value)} rows={3} className="w-full mt-1 px-3 py-2 rounded-lg border-2 border-black bg-white" placeholder="z.B. Sonnenuntergang auf der Brücke 🌇"/></div>
       <div><label className="font-bold text-sm block mb-1">Fotos (optional)</label><label className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-300 border-4 border-black cursor-pointer font-extrabold"><Camera size={18}/> Datei wählen<input type="file" accept="image/*" multiple className="hidden" onChange={onFile}/></label>{photos.length>0 && (<div className="mt-2 flex flex-wrap gap-2">{photos.map((p,i)=>(<img key={i} src={p} alt="Preview" className="max-h-56 rounded-xl border-4 border-black"/>))}</div>)}</div>
       <div className="flex"><button onClick={submit} className="w-full md:w-auto px-6 py-2 rounded-full bg-black text-white font-extrabold border-4 border-black">Speichern</button></div>
     </div>

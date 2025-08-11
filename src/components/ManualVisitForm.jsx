@@ -20,7 +20,7 @@ export default function ManualVisitForm({ stations, onAdd, onCancel }){
         <input type="date" value={date} onChange={e=>setDate(e.target.value)} className="px-3 py-2 rounded-lg border-4 border-black bg-white"/>
       </div>
       <div className="flex items-start gap-2 mb-2">
-        <textarea value={note} onChange={e=>setNote(e.target.value)} rows={3} placeholder="Notiz (optional)" className="flex-1 px-3 py-2 rounded-lg border-4 border-black bg-white"/>
+        <textarea value={note} onChange={e=>setNote(e.target.value)} rows={3} placeholder="Notiz (optional)" className="flex-1 px-3 py-2 rounded-lg border-2 border-black bg-white"/>
         <label className="w-16 h-16 rounded-xl bg-amber-300 border-4 border-black cursor-pointer font-extrabold flex items-center justify-center overflow-hidden" title="Foto hinzufügen">
           {photos.length ? (<img src={photos[0]} alt="Foto" className="w-full h-full object-cover"/>) : (<Camera size={28}/>)}
           <input type="file" accept="image/*" multiple className="hidden" onChange={onFile}/>
