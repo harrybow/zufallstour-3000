@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 
-import { Settings as SettingsIcon, Shuffle, MapPin, Camera, Upload, Download, Trash2, ArrowUpDown, Check, ChevronLeft, Trophy, Pencil, ImageUp, KeyRound } from "lucide-react";
+import { Settings as SettingsIcon, Shuffle, MapPin, Camera, Upload, Download, Trash2, ArrowUpDown, Check, ChevronLeft, Trophy, Pencil, ImageUp, KeyRound, LogOut } from "lucide-react";
 import { fetchJourneyDuration } from "./journeys";
 import { seedStations } from "./seed_stations";
 import HeaderLogo from "./components/HeaderLogo";
@@ -168,19 +168,29 @@ export default function App(){
   }, [stations]);
   const photoCount = useMemo(()=> stations.reduce((acc,s)=> acc + s.visits.reduce((sum,v)=> sum + (v.photos?.length||0),0),0), [stations]);
 
-  function handleLogin(tok){ setToken(tok); }
-  function handleLogout(){ apiLogout(); setToken(null); }
+  function handleLogin(tok){
+    try { localStorage.removeItem(STORAGE_KEY); } catch { /* ignore */ }
+    setStations(makeSeed());
+    setToken(tok);
+  }
+  async function handleLogout(){
+    const current = token;
+    try { if (current) await apiLogout(current); } catch { /* ignore */ }
+    try { localStorage.removeItem(STORAGE_KEY); } catch { /* ignore */ }
+    setStations(makeSeed());
+    setToken(null);
+  }
   async function confirmDeleteAccount(){
     if(!token) return;
     try{
       await deleteAccount(token);
-  }catch{
+    }catch{
       alert('Konto löschen fehlgeschlagen');
       return;
     }
     try{ localStorage.removeItem(STORAGE_KEY); }catch{ /* ignore */ }
     setStations(makeSeed());
-    apiLogout();
+    try { await apiLogout(token); } catch { /* ignore */ }
     setShowDeleteAccount(false);
     setToken(null);
   }
@@ -198,7 +208,8 @@ export default function App(){
 
   if(!token){
     return (
-      <div className="min-h-screen flex items-center justify-center bg-amber-200">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-amber-200">
+        <HeaderLogo />
         <Login onSuccess={handleLogin} />
       </div>
     );
@@ -301,10 +312,7 @@ export default function App(){
   return (
     <div className="min-h-screen w-full bg-[repeating-linear-gradient(135deg,_#ffea61_0,_#ffea61_8px,_#ffd447_8px,_#ffd447_16px)] p-3 sm:p-6">
       <div className="max-w-3xl mx-auto">
-        <div className="flex items-center justify-between">
-          <HeaderLogo />
-          <button onClick={handleLogout} className="text-sm underline">Logout</button>
-        </div>
+        <HeaderLogo className="h-16 w-auto mx-auto my-0" />
         <style>{`
           button{cursor:pointer}
           @keyframes shake{10%,90%{transform:translateX(-1px)}20%,80%{transform:translateX(2px)}30%,50%,70%{transform:translateX(-4px)}40%,60%{transform:translateX(4px)}}
@@ -410,6 +418,11 @@ export default function App(){
                 onClick={()=>setShowChangePassword(true)}
                 className="px-4 py-2 rounded-full bg-blue-500 text-white font-extrabold border-4 border-black flex items-center gap-2"
               ><KeyRound size={18}/> Passwort ändern</button>
+              <div className="flex flex-col gap-2">
+              <button
+                onClick={handleLogout}
+                className="px-4 py-2 rounded-full bg-white text-black font-extrabold border-4 border-black flex items-center gap-2"
+              ><LogOut size={18}/> Logout</button>
               <button
                 onClick={()=>setShowDeleteAccount(true)}
                 className="px-4 py-2 rounded-full bg-red-600 text-white font-extrabold border-4 border-black flex items-center gap-2"
