@@ -25,8 +25,8 @@ export default function Login({ onSuccess }){
       <div><input value={username} onChange={e=>setUsername(e.target.value)} placeholder="Username" className="w-full border p-2"/></div>
       <div><input type="password" value={password} onChange={e=>setPassword(e.target.value)} placeholder="Password" className="w-full border p-2"/></div>
       {error && <div className="text-red-600 text-sm">{error}</div>}
-      <button type="submit" className="w-full bg-black text-white p-2 rounded">{mode==='login'? 'Login' : 'Registrieren'}</button>
-      <button type="button" className="text-sm underline" onClick={()=>setMode(mode==='login'?'register':'login')}>
+      <button type="submit" className="w-full bg-black text-white p-2 rounded-lg">{mode==='login'? 'Login' : 'Registrieren'}</button>
+      <button type="button" className="w-full px-2 py-1 rounded-lg bg-white text-sm" onClick={()=>setMode(mode==='login'?'register':'login')}>
         {mode==='login' ? 'Neu hier? Registrieren' : 'Schon registriert? Login'}
       </button>
     </form>
