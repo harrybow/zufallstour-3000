@@ -1,12 +1,27 @@
 # React + Vite
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This project now uses **Cloudflare Pages Functions** for the backend API. The former Node.js server has been replaced by serverless functions under `functions/` which store their data in a Cloudflare KV namespace bound as `DB`.
 
-Currently, two official plugins are available:
+## Development
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- Install dependencies and run the frontend:
 
-## Expanding the ESLint configuration
+  ```bash
+  npm install
+  npm run dev
+  ```
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- To develop the backend locally, install [Wrangler](https://developers.cloudflare.com/workers/wrangler/install/) and run:
+
+  ```bash
+  npx wrangler pages dev
+  ```
+
+## Deployment
+
+1. Create a KV namespace in Cloudflare and bind it as `DB` in `wrangler.toml`.
+2. Deploy with:
+
+   ```bash
+   npx wrangler pages deploy
+   ```
