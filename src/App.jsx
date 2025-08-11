@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import React, { useEffect, useMemo, useRef, useState } from "react";
 
 import { Settings as SettingsIcon, Shuffle, MapPin, Camera, Upload, Download, Trash2, ArrowUpDown, Check, ChevronLeft, Trophy, Pencil, ImageUp } from "lucide-react";
@@ -75,7 +76,7 @@ const normName = (s) => String(s||"")
 export default function App(){
   const [token, setToken] = useState(()=>localStorage.getItem('authToken'));
   const [stations, setStations] = useState/** @type {Station[]} */(()=>{ try{ const raw=localStorage.getItem(STORAGE_KEY); if(raw) return normalizeStations(JSON.parse(raw));}catch{ /* ignore */ } return makeSeed(); });
-  const [page, setPage] = useState/** @type {"home"|"visited"} */("home");
+  const [page, setPage] = useState/** @type {"home"|"visited"|"all"} */("home");
   const [rolled, setRolled] = useState/** @type {string[]} */([]);
   const [showSettings, setShowSettings] = useState(false);
   const [addVisitFor, setAddVisitFor] = useState/** @type {Station|null} */(null);
@@ -110,6 +111,10 @@ export default function App(){
     }
   }, [token]);
   const visitedIds = useMemo(()=> new Set(stations.filter(s=>s.visits.length>0).map(s=>s.id)), [stations]);
+  const rolledStations = rolled.map(id=>stations.find(s=>s.id===id)).filter(Boolean);
+  const visitedCount = visitedIds.size, total = stations.length||1, percent = Math.round((visitedCount/total)*100);
+  const lastVisitDate = useMemo(()=>{ let max=""; stations.forEach(s=> s.visits.forEach(v=>{ if((v.date||"")>max) max=v.date; })); return max; }, [stations]);
+  const lineIndex = useMemo(()=>{ const map={}; stations.forEach(s=>{ (s.lines||[]).forEach(l=>{ if(!map[l]) map[l]={total:0,visited:0}; map[l].total+=1; if(s.visits.length>0) map[l].visited+=1; }); }); return map; }, [stations]);
 
   function handleLogin(tok){ setToken(tok); }
   function handleLogout(){ apiLogout(); setToken(null); }
@@ -216,11 +221,6 @@ export default function App(){
   }
   
 
-  const rolledStations = rolled.map(id=>stations.find(s=>s.id===id)).filter(Boolean);
-  const visitedCount = visitedIds.size, total = stations.length||1, percent = Math.round((visitedCount/total)*100);
-  const lastVisitDate = useMemo(()=>{ let max=""; stations.forEach(s=> s.visits.forEach(v=>{ if((v.date||"")>max) max=v.date; })); return max; }, [stations]);
-  const lineIndex = useMemo(()=>{ const map={}; stations.forEach(s=>{ (s.lines||[]).forEach(l=>{ if(!map[l]) map[l]={total:0,visited:0}; map[l].total+=1; if(s.visits.length>0) map[l].visited+=1; }); }); return map; }, [stations]);
-
   return (
     <div className="min-h-screen w-full bg-[repeating-linear-gradient(135deg,_#ffea61_0,_#ffea61_8px,_#ffd447_8px,_#ffd447_16px)] p-3 sm:p-6">
       <div className="max-w-3xl mx-auto">
@@ -263,11 +263,12 @@ export default function App(){
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
             <button onClick={doRoll} className={`w-full justify-center px-6 py-3 rounded-full text-xl font-black bg-gradient-to-r from-fuchsia-500 via-pink-500 to-orange-400 text-white border-4 border-black shadow-[6px_6px_0_0_rgba(0,0,0,0.6)] active:translate-y-[2px] active:shadow-[4px_4px_0_0_rgba(0,0,0,0.6)] flex items-center`} style={denyShake?{animation:"shake .6s"}:{}}>
               <span className="inline-flex items-center gap-2 mx-auto"><Shuffle size={22}/> WÜRFELN</span>
             </button>
             <button onClick={()=>setPage('visited')} className="w-full justify-center px-4 py-3 rounded-full font-bold bg-white text-black flex items-center gap-2 border-4 border-black shadow hover:brightness-110 active:translate-y-[1px]">Besuchte Bahnhöfe</button>
+            <button onClick={()=>setPage('all')} className="w-full justify-center px-4 py-3 rounded-full font-bold bg-white text-black flex items-center gap-2 border-4 border-black shadow hover:brightness-110 active:translate-y-[1px]">Alle Bahnhöfe</button>
             <button onClick={()=>setShowSettings(true)} className="w-full justify-center px-4 py-3 rounded-full font-bold bg-black text-white flex items-center border-4 border-black shadow" aria-label="Einstellungen" title="Einstellungen"><SettingsIcon size={20}/></button>
           </div>
 
@@ -283,6 +284,15 @@ export default function App(){
 
         {page==='visited' && (
           <VisitedPage stations={stations} onBack={()=>setPage('home')} onAddVisit={addVisit} onClearVisits={removeAllVisits} onAttachPhotos={attachPhotos} onUpdateNote={updateVisitNote} />
+        )}
+
+        {page==='all' && (
+          <AllStationsPage
+            stations={stations}
+            onBack={()=>setPage('home')}
+            onAddVisit={(st)=>setAddVisitFor(st)}
+            onClearVisits={removeAllVisits}
+          />
         )}
 
         <Modal open={showSettings} onClose={()=>setShowSettings(false)} title="Einstellungen">
@@ -352,6 +362,55 @@ function StationRow({ st, onAddVisit, onUnvisit }){
       </div>
 
       {lastVisit?.photos?.[0] && (<div className="mt-3"><img src={lastVisit.photos[0]} alt="Besuchsbild" className="w-full max-h-72 object-cover rounded-xl border-4 border-black"/></div>)}
+    </div>
+  );
+}
+
+// All Stations Page
+function AllStationsPage({ stations, onBack, onAddVisit, onClearVisits }){
+  const [filter, setFilter] = useState({ S: true, U: true, R: true });
+  const [unvisitedOnly, setUnvisitedOnly] = useState(false);
+  const sortModes = ['name', 'longest'];
+  const sortLabels = { name: 'Name ↑', longest: 'Am längsten her ↑' };
+  const [sortKey, setSortKey] = useState('name');
+  const toggleType = (t) => setFilter(f => ({ ...f, [t]: !f[t] }));
+  const cycleSort = () => setSortKey(k => sortModes[(sortModes.indexOf(k) + 1) % sortModes.length]);
+  const latestISO = (st) => st.visits.length ? st.visits[st.visits.length - 1].date : '9999-12-31';
+  const filtered = useMemo(() => stations.filter(st => {
+    if (unvisitedOnly && st.visits.length > 0) return false;
+    if (!filter.S && st.types.includes('S')) return false;
+    if (!filter.U && st.types.includes('U')) return false;
+    if (!filter.R && st.types.includes('R')) return false;
+    return true;
+  }), [stations, filter, unvisitedOnly]);
+  const sorted = useMemo(() => {
+    const arr = [...filtered];
+    if (sortKey === 'longest') arr.sort((a, b) => latestISO(a).localeCompare(latestISO(b)));
+    else arr.sort((a, b) => a.name.localeCompare(b.name));
+    return arr;
+  }, [filtered, sortKey]);
+  return (
+    <div className="rounded-[28px] border-4 border-black shadow-[10px_10px_0_0_rgba(0,0,0,0.6)] bg-gradient-to-br from-green-300 via-blue-200 to-purple-200 p-4 sm:p-6 mb-4">
+      <div className="flex items-center gap-2 mb-4">
+        <button onClick={onBack} className="px-3 py-2 rounded-full border-4 border-black bg-white flex items-center gap-2"><ChevronLeft size={18}/> Zurück</button>
+        <div className="font-extrabold text-lg">Alle Bahnhöfe</div>
+      </div>
+      <div className="flex flex-wrap gap-2 mb-4 text-sm">
+        {['S','U','R'].map(t => (
+          <label key={t} className="flex items-center gap-1 bg-white/70 rounded-full px-2 py-1 border-2 border-black">
+            <input type="checkbox" checked={filter[t]} onChange={()=>toggleType(t)} className="accent-black" />{t}
+          </label>
+        ))}
+        <label className="flex items-center gap-1 bg-white/70 rounded-full px-2 py-1 border-2 border-black">
+          <input type="checkbox" checked={unvisitedOnly} onChange={()=>setUnvisitedOnly(v=>!v)} className="accent-black"/> nur unbesuchte
+        </label>
+        <button onClick={cycleSort} className="ml-auto px-2 py-1 rounded-full border-2 border-black bg-white flex items-center gap-1" title="Sortierung wechseln"><ArrowUpDown size={16}/> {sortLabels[sortKey]}</button>
+      </div>
+      <div className="space-y-3">
+        {sorted.map(st => (
+          <StationRow key={st.id} st={st} onAddVisit={()=>onAddVisit(st)} onUnvisit={()=>onClearVisits(st.id)} />
+        ))}
+      </div>
     </div>
   );
 }

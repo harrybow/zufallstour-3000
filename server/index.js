@@ -1,3 +1,5 @@
+/* eslint-env node */
+/* global Buffer, process */
 import http from 'http';
 import { parse } from 'url';
 import { existsSync, readFileSync, writeFileSync } from 'fs';
