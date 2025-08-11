@@ -43,7 +43,11 @@ export default function ComboBox({ options, value, onChange, placeholder = "Bahn
         placeholder={placeholder}
         className="w-full px-3 py-2 rounded-lg border-4 border-black bg-white"
       />
-      <button type="button" onClick={() => setOpen(o => !o)} className="absolute right-2 top-1/2 -translate-y-1/2 px-2 py-1 rounded border-2 border-black bg-white">▾</button>
+      <button
+        type="button"
+        onClick={() => setOpen(o => !o)}
+        className="absolute right-2 top-1/2 -translate-y-1/2 px-2 py-1 rounded bg-white"
+      >▾</button>
       {open && (
         <div className="absolute z-20 mt-1 left-0 right-0 max-h-64 overflow-auto rounded-lg border-4 border-black bg-white shadow">
           {filtered.length === 0 ? (
