@@ -153,7 +153,7 @@ export default function App(){
   const lastVisitDate = useMemo(()=>{ let max=""; stations.forEach(s=> s.visits.forEach(v=>{ if((v.date||"")>max) max=v.date; })); return max; }, [stations]);
   const lineIndex = useMemo(()=>{ const map={}; stations.forEach(s=>{ (s.lines||[]).forEach(l=>{ if(!map[l]) map[l]={total:0,visited:0}; map[l].total+=1; if(s.visits.length>0) map[l].visited+=1; }); }); return map; }, [stations]);
   const typeStats = useMemo(()=>{
-    const stats = { S: { total: 0, visited: 0 }, U: { total: 0, visited: 0 }, R: { total: 0, visited: 0 } };
+    const stats = { S: { total: 0, visited: 0 }, U: { total: 0, visited: 0 } };
     stations.forEach(s => {
       if (s.types.includes("S")) {
         stats.S.total += 1;
@@ -162,10 +162,6 @@ export default function App(){
       if (s.types.includes("U")) {
         stats.U.total += 1;
         if (s.visits.length > 0) stats.U.visited += 1;
-      }
-      if (s.types.includes("R")) {
-        stats.R.total += 1;
-        if (s.visits.length > 0) stats.R.visited += 1;
       }
     });
     return stats;
@@ -343,7 +339,7 @@ export default function App(){
               <div className="font-extrabold text-sm">Fortschritt</div>
               <div className="text-xs opacity-80">{visitedCount}/{total} ({percent}%)</div>
               <div className="text-xs opacity-80 flex items-center gap-1"><Camera size={12}/> {photoCount}</div>
-              <button onClick={()=>setShowMilestones(true)} className="ml-auto text-xs px-2 py-1 rounded-full border-4 border-black bg-white flex items-center gap-1"><Trophy size={14}/> Meilensteine</button>
+              <button onClick={()=>setShowMilestones(true)} className="ml-auto text-xs px-2 py-1 rounded-full border-2 border-black bg-white flex items-center gap-1"><Trophy size={14}/> Meilensteine</button>
             </div>
             <div onClick={()=>setShowMilestones(true)} className="relative h-4 rounded-full border-4 border-black bg-white cursor-pointer">
               <div className="h-full bg-green-500" style={{width:`${Math.max(4,percent)}%`}} />
@@ -407,7 +403,7 @@ export default function App(){
             <label className="flex items-center gap-2 text-sm">
               <input
                 type="checkbox"
-                className="w-4 h-4 rounded border-4 border-black"
+                className="w-4 h-4 rounded border-2 border-black"
                 checked={cooldownEnabled}
                 onChange={e=>setCooldownEnabled(e.target.checked)}
               />
@@ -451,11 +447,11 @@ export default function App(){
         <Modal open={showDeleteAccount} onClose={()=>setShowDeleteAccount(false)} title="Konto löschen">
           <div className="space-y-3">
             <p className="text-sm">Willst du dein Konto dauerhaft löschen? Alle Daten werden entfernt.</p>
-            <div className="flex gap-2 justify-end"><button onClick={()=>setShowDeleteAccount(false)} className="px-4 py-2 rounded-lg bg-white border-4 border-black">Abbrechen</button><button onClick={confirmDeleteAccount} className="px-4 py-2 rounded-lg bg-red-600 text-white border-4 border-black">Löschen</button></div>
+            <div className="flex gap-2 justify-end"><button onClick={()=>setShowDeleteAccount(false)} className="px-4 py-2 rounded-lg bg-white border-2 border-black">Abbrechen</button><button onClick={confirmDeleteAccount} className="px-4 py-2 rounded-lg bg-red-600 text-white border-2 border-black">Löschen</button></div>
           </div>
         </Modal>
 
-        <MilestonesModal open={showMilestones} onClose={()=>setShowMilestones(false)} percent={percent} visitedCount={visitedCount} total={total} lineIndex={lineIndex} typeStats={typeStats} stations={stations} />
+        <MilestonesModal open={showMilestones} onClose={()=>setShowMilestones(false)} percent={percent} visitedCount={visitedCount} total={total} lineIndex={lineIndex} typeStats={typeStats} />
 
         <Modal open={!!addVisitFor} onClose={()=>setAddVisitFor(null)} title={`Besuch eintragen – ${addVisitFor?.name ?? ''}`}>
           {addVisitFor && (<AddVisitForm onSave={addVisit} stationId={addVisitFor.id} />)}
@@ -547,16 +543,16 @@ function StationsPage({ stations, onBack }){
           <button
             key={t}
             onClick={()=>toggleType(t)}
-            className={`px-3 py-1 rounded-full border-4 border-black ${typeFilter[t]?"bg-black text-white":"bg-white"}`}
+            className={`px-3 py-1 rounded-full border-2 border-black ${typeFilter[t]?"bg-black text-white":"bg-white"}`}
           >{t}</button>
         ))}
         <button
           onClick={()=>setOnlyUnvisited(v=>!v)}
-          className={`px-3 py-1 rounded-full border-4 border-black ${onlyUnvisited?"bg-black text-white":"bg-white"}`}
+          className={`px-3 py-1 rounded-full border-2 border-black ${onlyUnvisited?"bg-black text-white":"bg-white"}`}
         >Noch nie besucht</button>
         <button
           onClick={()=>setSortOldest(s=>!s)}
-          className={`px-3 py-1 rounded-full border-4 border-black ${sortOldest?"bg-black text-white":"bg-white"}`}
+          className={`px-3 py-1 rounded-full border-2 border-black ${sortOldest?"bg-black text-white":"bg-white"}`}
         >Am längsten her</button>
       </div>
 
@@ -565,7 +561,7 @@ function StationsPage({ stations, onBack }){
         {sorted.map(st => (
           <div
             key={st.id}
-            className={`p-2 border-4 border-black rounded-lg ${st.visits.length ? 'bg-[#8c4bd6] text-white' : 'bg-white'}`}
+            className={`p-2 border-2 border-black rounded-lg ${st.visits.length ? 'bg-[#8c4bd6] text-white' : 'bg-white'}`}
           >
             <div className="font-bold truncate">{st.name}</div>
             <LineChips lines={st.lines} types={st.types} />
@@ -626,7 +622,7 @@ function VisitedPage({ stations, onBack, onAddVisit, onClearVisits, onAttachPhot
         <div>{sortLabels[sortKey]}</div>
           <button
             onClick={cycleSortKey}
-            className="p-1 rounded-lg border-4 border-black bg-white"
+            className="p-1 rounded-lg border-2 border-black bg-white"
             title="Sortierung ändern"
             type="button"
           >
@@ -647,7 +643,7 @@ function VisitedPage({ stations, onBack, onAddVisit, onClearVisits, onAttachPhot
                   <LineChips lines={st.lines} types={st.types} />
                   <div className="text-xs mt-1">Zuletzt am <b>{formatDate(st.visits[st.visits.length-1].date)}</b></div>
                 </div>
-                <div className="shrink-0"><button type="button" onClick={()=>setConfirmId(st.id)} className="w-9 h-9 rounded-full bg-red-500 text-white border-4 border-black flex items-center justify-center" title="Besuch(e) löschen"><Trash2 size={16}/></button></div>
+                <div className="shrink-0"><button type="button" onClick={()=>setConfirmId(st.id)} className="w-9 h-9 rounded-full bg-red-500 text-white border-2 border-black flex items-center justify-center" title="Besuch(e) löschen"><Trash2 size={16}/></button></div>
               </div>
               <div className="mt-2 grid grid-cols-1 gap-2">
                 {st.visits.map((v,idx)=> (
@@ -659,21 +655,21 @@ function VisitedPage({ stations, onBack, onAddVisit, onClearVisits, onAttachPhot
                           onChange={e=>setEditing(ed=>({...ed, text:e.target.value}))}
                           onKeyDown={onNoteKeyDown}
                           rows={3}
-                          className="w-full text-xs px-2 py-1 rounded-md border-4 border-black bg-white"
+                          className="w-full text-xs px-2 py-1 rounded-md border-2 border-black bg-white"
                           placeholder="Notiz"
                         />
                         <div className="flex gap-2 justify-end">
-                          <button onClick={cancelEdit} className="px-3 py-1 rounded-lg bg-white border-4 border-black text-xs">Abbrechen</button>
-                          <button onClick={saveEdit} className="px-3 py-1 rounded-lg bg-black text-white border-4 border-black text-xs">Speichern</button>
+                          <button onClick={cancelEdit} className="px-3 py-1 rounded-lg bg-white border-2 border-black text-xs">Abbrechen</button>
+                          <button onClick={saveEdit} className="px-3 py-1 rounded-lg bg-black text-white border-2 border-black text-xs">Speichern</button>
                         </div>
                       </div>
                     ) : (
                       (v.note ? (
-                        <div className="text-xs px-2 py-1 rounded-md border-4 border-black bg-white/70 flex items-start gap-2">
+                        <div className="text-xs px-2 py-1 rounded-md border-2 border-black bg-white/70 flex items-start gap-2">
                           <div className="flex-1 break-words">{v.note}</div>
                           <button
                             title="Notiz bearbeiten"
-                            className="shrink-0 p-1 rounded-md border-4 border-black bg-white"
+                            className="shrink-0 p-1 rounded-md border-2 border-black bg-white"
                             onClick={()=>startEdit(st.id, idx, v.note)}
                           >
                             <Pencil size={14}/>
@@ -681,7 +677,7 @@ function VisitedPage({ stations, onBack, onAddVisit, onClearVisits, onAttachPhot
                         </div>
                       ) : (
                         <button
-                          className="w-full rounded-md border-4 border-dashed border-black px-2 py-1 text-xs bg-white/70 text-left"
+                          className="w-full rounded-md border-2 border-dashed border-black px-2 py-1 text-xs bg-white/70 text-left"
                           onClick={()=>startEdit(st.id, idx, "")}
                         >
                           Notiz hinzufügen ✍️
@@ -693,14 +689,14 @@ function VisitedPage({ stations, onBack, onAddVisit, onClearVisits, onAttachPhot
                       {(v.photos || []).map((p,pidx)=> (
                         <button
                           key={pidx}
-                          className="w-full h-64 rounded-xl overflow-hidden border-4 border-black bg-white"
+                          className="w-full h-64 rounded-xl overflow-hidden border-2 border-black bg-white"
                           onClick={()=>setZoom({src:p, station:st.name, date:v.date})}
                         >
                           <img src={p} alt="Foto" className="w-full h-full object-contain"/>
                         </button>
                       ))}
                       <button
-                        className="w-full aspect-square rounded-xl border-4 border-dashed border-black flex items-center justify-center bg-white"
+                        className="w-full aspect-square rounded-xl border-2 border-dashed border-black flex items-center justify-center bg-white"
                         onClick={()=>{ setPendingPhoto({stationId:st.id, index:idx}); fileRef.current?.click(); }}
                       >
                         <ImageUp size={24}/>
@@ -718,7 +714,7 @@ function VisitedPage({ stations, onBack, onAddVisit, onClearVisits, onAttachPhot
       <Modal open={!!confirmId} onClose={()=>setConfirmId(null)} title="Besuche löschen">
         <div className="space-y-3">
           <p className="text-sm">Diesen Bahnhof als <b>unbesucht</b> markieren? Alle Besuchseinträge werden entfernt.</p>
-          <div className="flex gap-2 justify-end"><button onClick={()=>setConfirmId(null)} className="px-4 py-2 rounded-lg bg-white border-4 border-black">Abbrechen</button><button onClick={()=>{ onClearVisits(confirmId); setConfirmId(null); }} className="px-4 py-2 rounded-lg bg-red-600 text-white border-4 border-black">Löschen</button></div>
+          <div className="flex gap-2 justify-end"><button onClick={()=>setConfirmId(null)} className="px-4 py-2 rounded-lg bg-white border-2 border-black">Abbrechen</button><button onClick={()=>{ onClearVisits(confirmId); setConfirmId(null); }} className="px-4 py-2 rounded-lg bg-red-600 text-white border-2 border-black">Löschen</button></div>
         </div>
       </Modal>
 
@@ -736,7 +732,7 @@ function ChangePasswordForm({ onSave, onCancel }){
     <div className="space-y-3">
       <div><label className="font-bold text-sm">Altes Passwort</label><input type="password" value={oldPw} onChange={e=>setOldPw(e.target.value)} className="w-full mt-1 px-3 py-2 rounded-lg border-4 border-black bg-white"/></div>
       <div><label className="font-bold text-sm">Neues Passwort</label><input type="password" value={newPw} onChange={e=>setNewPw(e.target.value)} className="w-full mt-1 px-3 py-2 rounded-lg border-4 border-black bg-white"/></div>
-      <div className="flex gap-2 justify-end"><button onClick={onCancel} className="px-4 py-2 rounded-lg bg-white border-4 border-black">Abbrechen</button><button onClick={()=>onSave(oldPw, newPw)} className="px-4 py-2 rounded-lg bg-black text-white border-4 border-black">Speichern</button></div>
+      <div className="flex gap-2 justify-end"><button onClick={onCancel} className="px-4 py-2 rounded-lg bg-white border-2 border-black">Abbrechen</button><button onClick={()=>onSave(oldPw, newPw)} className="px-4 py-2 rounded-lg bg-black text-white border-2 border-black">Speichern</button></div>
     </div>
   );
 }
@@ -759,47 +755,22 @@ function AddVisitForm({ stationId, onSave }){
 }
 
 // Milestones Modal
-function MilestonesModal({ open, onClose, percent, visitedCount, total, lineIndex, typeStats, stations }) {
-  const firstVisitDates = useMemo(()=> stations.map(s=>s.visits[0]?.date).filter(Boolean).sort(), [stations]);
-  const dateForCount = (n) => firstVisitDates[n-1] || null;
-  const { S = { total:0, visited:0 }, U = { total:0, visited:0 }, R = { total:0, visited:0 } } = typeStats || {};
-  if(!open) return null;
-  const stationMilestones = [
-    { label:"1. Besuch", count:1, desc:"Erster besuchter Bahnhof" },
-    { label:"Hattrick", count:3, desc:"3 besuchte Bahnhöfe" },
-    { label:"10%", percent:10 },
-    { label:"25%", percent:25 },
-    { label:"50%", percent:50 },
-    { label:"75%", percent:75 },
-    { label:"Fast geschafft!", count: Math.max(total-3,0), desc:"Nur noch 3 Bahnhöfe bis 100%" },
-    { label:"100%", percent:100 }
-  ].map(m=>{
-    const count = m.count ?? Math.ceil(total*(m.percent/100));
-    const done = visitedCount >= count;
-    const date = done ? dateForCount(count) : null;
-    const base = m.percent
-      ? `${m.label} - das entspricht ${Math.round(total*(m.percent/100))} besuchten Bahnhöfen`
-      : m.desc;
-    const info = done
-      ? `${base}. Erreicht am: ${formatDate(date)}`
-      : `${base}. Noch nicht erreicht.`;
-    return { ...m, count, done, info };
-  });
+function MilestonesModal({ open, onClose, percent, visitedCount, total, lineIndex, typeStats }){
+  if(!open) return null; const percentMilestones=[25,50,75,100], countMilestones=[10,25,50];
+  const { S = { total:0, visited:0 }, U = { total:0, visited:0 } } = typeStats || {};
   return (
     <Modal open={open} onClose={onClose} title="Meilensteine">
       <div className="space-y-6">
-        <section><div className="font-extrabold mb-2">Gesamt-Fortschritt</div><div className="w-full h-4 rounded-full border-4 border-black bg-white overflow-hidden">{percent>0 && (<div className="h-full bg-green-500" style={{width:`${percent}%`}}/> )}</div><div className="text-sm mt-1">{visitedCount}/{total} ({percent}%)</div></section>
-        <section><div className="font-extrabold mb-2">Stationen-Ziele</div><div className="grid grid-cols-2 sm:grid-cols-4 gap-2">{stationMilestones.map(m=> (
-          <div key={m.label} title={m.info} onClick={()=>alert(m.info)} className={`rounded-xl border-4 border-black p-2 text-center ${m.done?"bg-green-300":"bg-white"}`}><div className="font-black">{m.label}</div><div className="text-xs flex items-center justify-center gap-1">{m.done?<Check size={14}/> : null} {m.done?"erreicht":"offen"}</div></div>
-        ))}</div></section>
+        <section><div className="font-extrabold mb-2">Gesamt-Fortschritt</div><div className="w-full h-4 rounded-full border-4 border-black bg-white"><div className="h-full bg-green-500" style={{width:`${percent}%`}}/></div><div className="text-sm mt-1">{visitedCount}/{total} ({percent}%)</div></section>
+        <section><div className="font-extrabold mb-2">Prozent-Ziele</div><div className="grid grid-cols-2 sm:grid-cols-4 gap-2">{percentMilestones.map(p=> (<div key={p} className={`rounded-xl border-4 border-black p-2 text-center ${percent>=p?"bg-green-300":"bg-white"}`}><div className="font-black">{p}%</div><div className="text-xs flex items-center justify-center gap-1">{percent>=p?<Check size={14}/> : null} {percent>=p?"erreicht":"offen"}</div></div>))}</div></section>
+        <section><div className="font-extrabold mb-2">Anzahl-Ziele</div><div className="grid grid-cols-3 gap-2">{countMilestones.map(c=> (<div key={c} className={`rounded-xl border-4 border-black p-2 text-center ${visitedCount>=c?"bg-green-300":"bg-white"}`}><div className="font-black">{c}</div><div className="text-xs flex items-center justify-center gap-1">{visitedCount>=c?<Check size={14}/> : null} {visitedCount>=c?"erreicht":"offen"}</div></div>))}</div></section>
         <section><div className="font-extrabold mb-2">Netz-Ziele</div><div className="grid grid-cols-1 sm:grid-cols-2 gap-2">{[
-          { label: "100% S-Bahnhöfe", stat: S, type:"S" },
-          { label: "100% U-Bahnhöfe", stat: U, type:"U" },
-          { label: "100% Regionalbahnhöfe", stat: R, type:"R" },
-        ].map(({label, stat, type}) => { const done = stat.visited >= stat.total && stat.total > 0; const pct = stat.total ? Math.round((stat.visited/stat.total)*100) : 0; const dates = stations.filter(s=>s.types.includes(type) && s.visits[0]?.date).map(s=>s.visits[0].date).sort(); const date = done ? dates[stat.total-1] : null; const info = done ? `${label} - erreicht am: ${formatDate(date)}` : `${stat.visited}/${stat.total} Bahnhöfe (${pct}%)`; return (
-          <div key={label} title={info} onClick={()=>alert(info)} className={`rounded-xl border-4 border-black p-2 text-center ${done?"bg-green-300":"bg-white"}`}><div className="font-black">{label}</div><div className="text-xs flex items-center justify-center gap-1">{done?<Check size={14}/> :null} {done?"erreicht":`${stat.visited}/${stat.total} (${pct}%)`}</div></div>
+          { label: "100% S-Bahnhöfe", stat: S },
+          { label: "100% U-Bahnhöfe", stat: U },
+        ].map(({label, stat}) => { const done = stat.visited >= stat.total && stat.total > 0; const pct = stat.total ? Math.round((stat.visited/stat.total)*100) : 0; return (
+          <div key={label} className={`rounded-xl border-4 border-black p-2 text-center ${done?"bg-green-300":"bg-white"}`}><div className="font-black">{label}</div><div className="text-xs flex items-center justify-center gap-1">{done?<Check size={14}/> : null} {done?"erreicht":`${stat.visited}/${stat.total} (${pct}%)`}</div></div>
         ); })}</div></section>
-        <section><div className="font-extrabold mb-2">Linien</div><div className="grid grid-cols-1 sm:grid-cols-2 gap-2">{Object.entries(lineIndex).map(([line,stat])=>{ const done=stat.visited>=stat.total&&stat.total>0; const pct=Math.round((stat.visited/stat.total)*100); const visitedStations=stations.filter(s=> (s.lines||[]).includes(line) && s.visits.length>0); const visitedNames=visitedStations.map(s=>s.name); const dates=visitedStations.map(s=>s.visits[0]?.date).filter(Boolean).sort(); const date=done?dates[stat.total-1]:null; const info=visitedNames.length ? (done ? `Alle Bahnhöfe besucht${date ? ` am ${formatDate(date)}` : ""}` : `Besuchte Bahnhöfe: ${visitedNames.join(", ")}`) : "Noch keine Bahnhöfe besucht"; return (<div key={line} title={info} onClick={()=>alert(info)} className={`rounded-xl border-4 border-black p-2 ${done?"bg-green-200":"bg-white"}`}><div className="flex items-center gap-2 mb-1"><span className="px-2 py-0.5 text-xs font-black rounded-full border-4 border-black bg-white">{line}</span><div className="text-xs ml-auto">{stat.visited}/{stat.total} ({pct}%)</div></div><div className="w-full h-3 rounded-full border-4 border-black bg-white overflow-hidden">{pct>0 && (<div className="h-full bg-green-500" style={{width:`${pct}%`}}/> )}</div></div>); })}</div></section>
+        <section><div className="font-extrabold mb-2">Linien</div><div className="grid grid-cols-1 sm:grid-cols-2 gap-2">{Object.entries(lineIndex).map(([line,stat])=>{ const done=stat.visited>=stat.total&&stat.total>0; const pct=Math.round((stat.visited/stat.total)*100); return (<div key={line} className={`rounded-xl border-4 border-black p-2 ${done?"bg-green-200":"bg-white"}`}><div className="flex items-center gap-2 mb-1"><span className="px-2 py-0.5 text-xs font-black rounded-full border-2 border-black bg-white">{line}</span><div className="text-xs ml-auto">{stat.visited}/{stat.total} ({pct}%)</div></div><div className="w-full h-3 rounded-full border-2 border-black bg-white"><div className="h-full bg-green-500" style={{width:`${pct}%`}}/></div></div>); })}</div></section>
       </div>
     </Modal>
   );
