@@ -31,3 +31,7 @@ export async function fetchData(token){
 export async function saveData(token, data){
   await fetch('/api/data', {method:'POST', headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`}, body: JSON.stringify({data})});
 }
+export async function deleteAccount(token){
+  const res = await fetch('/api/account', {method:'DELETE', headers:{'Authorization':`Bearer ${token}`}});
+  if(!res.ok) throw new Error('Delete failed');
+}
