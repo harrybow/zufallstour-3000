@@ -1,6 +1,6 @@
 # React + Vite
 
-This project now uses **Cloudflare Pages Functions** for the backend API. The former Node.js server has been replaced by serverless functions under `functions/` which store their data in a Cloudflare KV namespace bound as `DB`.
+This project now runs entirely on a single **Cloudflare Worker**. The Worker serves the built frontend assets and exposes API routes backed by a Cloudflare KV namespace bound as `DB`.
 
 ## Development
 
@@ -11,17 +11,18 @@ This project now uses **Cloudflare Pages Functions** for the backend API. The fo
   npm run dev
   ```
 
-- To develop the backend locally, install [Wrangler](https://developers.cloudflare.com/workers/wrangler/install/) and run:
+- Build the frontend and start the Worker locally:
 
   ```bash
-  npx wrangler pages dev
+  npm run build
+  npx wrangler dev
   ```
 
 ## Deployment
 
 1. Create a KV namespace in Cloudflare and bind it as `DB` in `wrangler.toml`.
-2. Deploy with:
+2. Deploy the Worker and assets:
 
    ```bash
-   npx wrangler pages deploy
+   npx wrangler deploy
    ```

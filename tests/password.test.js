@@ -32,20 +32,20 @@ beforeEach(() => {
 
 describe('password change', () => {
   it('changes password and rejects old password', async () => {
-    let res = await register.onRequestPost({ request: makeRequest('/api/register', 'POST', { username: 'alice', password: 'oldpw' }), env });
+    let res = await register(makeRequest('/api/register', 'POST', { username: 'alice', password: 'oldpw' }), env);
     expect(res.status).toBe(200);
 
-    res = await login.onRequestPost({ request: makeRequest('/api/login', 'POST', { username: 'alice', password: 'oldpw' }), env });
+    res = await login(makeRequest('/api/login', 'POST', { username: 'alice', password: 'oldpw' }), env);
     expect(res.status).toBe(200);
     const { token } = await res.json();
 
-    res = await password.onRequestPost({ request: makeRequest('/api/password', 'POST', { oldPassword: 'oldpw', newPassword: 'newpw' }, token), env });
+    res = await password(makeRequest('/api/password', 'POST', { oldPassword: 'oldpw', newPassword: 'newpw' }, token), env);
     expect(res.status).toBe(200);
 
-    res = await login.onRequestPost({ request: makeRequest('/api/login', 'POST', { username: 'alice', password: 'newpw' }), env });
+    res = await login(makeRequest('/api/login', 'POST', { username: 'alice', password: 'newpw' }), env);
     expect(res.status).toBe(200);
 
-    res = await login.onRequestPost({ request: makeRequest('/api/login', 'POST', { username: 'alice', password: 'oldpw' }), env });
+    res = await login(makeRequest('/api/login', 'POST', { username: 'alice', password: 'oldpw' }), env);
     expect(res.status).toBe(401);
   });
 });
