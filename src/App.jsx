@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 
-import { Settings as SettingsIcon, Shuffle, MapPin, Camera, Upload, Download, Trash2, ArrowUpDown, Check, ChevronLeft, Trophy, Pencil, ImageUp } from "lucide-react";
+import { Settings as SettingsIcon, Shuffle, MapPin, Camera, Upload, Download, Trash2, ArrowUpDown, Check, ChevronLeft, Trophy, Pencil, ImageUp, LogOut } from "lucide-react";
 import { fetchJourneyDuration } from "./journeys";
 import { seedStations } from "./seed_stations";
 import HeaderLogo from "./components/HeaderLogo";
@@ -186,7 +186,8 @@ export default function App(){
 
   if(!token){
     return (
-      <div className="min-h-screen flex items-center justify-center bg-amber-200">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-amber-200">
+        <HeaderLogo />
         <Login onSuccess={handleLogin} />
       </div>
     );
@@ -289,10 +290,7 @@ export default function App(){
   return (
     <div className="min-h-screen w-full bg-[repeating-linear-gradient(135deg,_#ffea61_0,_#ffea61_8px,_#ffd447_8px,_#ffd447_16px)] p-3 sm:p-6">
       <div className="max-w-3xl mx-auto">
-        <div className="flex items-center justify-between">
-          <HeaderLogo />
-          <button onClick={handleLogout} className="text-sm underline">Logout</button>
-        </div>
+        <HeaderLogo className="h-16 w-auto mx-auto my-0" />
         <style>{`
           button{cursor:pointer}
           @keyframes shake{10%,90%{transform:translateX(-1px)}20%,80%{transform:translateX(2px)}30%,50%,70%{transform:translateX(-4px)}40%,60%{transform:translateX(4px)}}
@@ -393,10 +391,16 @@ export default function App(){
           </div>
           <div className="mt-4 rounded-2xl border-4 border-black p-4 bg-white/80">
             <h3 className="font-extrabold text-lg mb-2">Konto</h3>
-            <button
-              onClick={()=>setShowDeleteAccount(true)}
-              className="px-4 py-2 rounded-full bg-red-600 text-white font-extrabold border-4 border-black flex items-center gap-2"
-            ><Trash2 size={18}/> Konto löschen</button>
+            <div className="flex flex-col gap-2">
+              <button
+                onClick={handleLogout}
+                className="px-4 py-2 rounded-full bg-white text-black font-extrabold border-4 border-black flex items-center gap-2"
+              ><LogOut size={18}/> Logout</button>
+              <button
+                onClick={()=>setShowDeleteAccount(true)}
+                className="px-4 py-2 rounded-full bg-red-600 text-white font-extrabold border-4 border-black flex items-center gap-2"
+              ><Trash2 size={18}/> Konto löschen</button>
+            </div>
           </div>
         </Modal>
 
