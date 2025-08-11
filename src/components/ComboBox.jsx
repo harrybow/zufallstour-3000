@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useI18n } from "../i18n.jsx";
 
-export default function ComboBox({ options, value, onChange, placeholder = "Bahnhof wählen…" }){
+export default function ComboBox({ options, value, onChange, placeholder }){
+  const { t } = useI18n();
   const wrapRef = useRef(null);
   const inputRef = useRef(null);
   const [open, setOpen] = useState(false);
@@ -40,7 +42,7 @@ export default function ComboBox({ options, value, onChange, placeholder = "Bahn
         onChange={(e) => { setQ(e.target.value); if(!open) setOpen(true); }}
         onFocus={() => setOpen(true)}
         onKeyDown={onKey}
-        placeholder={placeholder}
+        placeholder={placeholder || t('comboBox.placeholder')}
         className="w-full px-3 py-2 rounded-lg border-4 border-black bg-white"
       />
       <button
@@ -51,7 +53,7 @@ export default function ComboBox({ options, value, onChange, placeholder = "Bahn
       {open && (
         <div className="absolute z-20 mt-1 left-0 right-0 max-h-64 overflow-auto rounded-lg border-4 border-black bg-white shadow">
           {filtered.length === 0 ? (
-            <div className="px-3 py-2 text-sm opacity-70">Keine Treffer</div>
+            <div className="px-3 py-2 text-sm opacity-70">{t('comboBox.noResults')}</div>
           ) : (
             filtered.map((o, idx) => (
               <button key={o.id} type="button" onMouseEnter={() => setHi(idx)} onClick={() => choose(o.id)}
