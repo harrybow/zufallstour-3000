@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { register } from '../src/api/register.js';
-import { login } from '../src/api/login.js';
-import { password } from '../src/api/password.js';
+import * as register from '../functions/api/register.js';
+import * as login from '../functions/api/login.js';
+import * as password from '../functions/api/password.js';
 
 function makeEnv(){
   const store = {};
