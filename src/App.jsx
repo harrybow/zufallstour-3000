@@ -413,20 +413,21 @@ export default function App(){
           </div>
           <div className="mt-4 rounded-2xl border-4 border-black p-4 bg-white/80">
             <h3 className="font-extrabold text-lg mb-2">Konto</h3>
-            <div className="flex flex-col sm:flex-row gap-2">
+            <div className="flex flex-col sm:flex-row gap-2 w-full">
               <button
                 onClick={()=>setShowChangePassword(true)}
-                className="px-4 py-2 rounded-full bg-blue-500 text-white font-extrabold border-4 border-black flex items-center gap-2"
+                className="w-full sm:flex-1 sm:basis-0 px-4 py-2 rounded-full bg-blue-500 text-white font-extrabold border-4 border-black flex items-center justify-center gap-2"
               ><KeyRound size={18}/> Passwort ändern</button>
-              <div className="flex flex-col gap-2">
-              <button
-                onClick={handleLogout}
-                className="px-4 py-2 rounded-full bg-white text-black font-extrabold border-4 border-black flex items-center gap-2"
-              ><LogOut size={18}/> Logout</button>
+
               <button
                 onClick={()=>setShowDeleteAccount(true)}
-                className="px-4 py-2 rounded-full bg-red-600 text-white font-extrabold border-4 border-black flex items-center gap-2"
+                className="w-full sm:flex-1 sm:basis-0 px-4 py-2 rounded-full bg-red-600 text-white font-extrabold border-4 border-black flex items-center justify-center gap-2"
               ><Trash2 size={18}/> Konto löschen</button>
+
+              <button
+                onClick={handleLogout}
+                className="w-full sm:flex-1 sm:basis-0 px-4 py-2 rounded-full bg-white text-black font-extrabold border-4 border-black flex items-center justify-center gap-2"
+              ><LogOut size={18}/> Logout</button>
             </div>
           </div>
         </Modal>
