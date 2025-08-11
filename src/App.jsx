@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 
 import { Settings as SettingsIcon, Shuffle, MapPin, Camera, Upload, Download, Trash2, ArrowUpDown, Check, ChevronLeft, Trophy, Pencil, ImageUp } from "lucide-react";
+import { fetchJourneyDuration } from "./journeys";
 import { seedStations } from "./seed_stations";
 import HeaderLogo from "./components/HeaderLogo";
 import LineChips from "./components/LineChips";
@@ -14,6 +15,7 @@ import { fetchData, saveData, logout as apiLogout } from "./api.js";
 // Helpers & Types
 const STORAGE_KEY = "zufallstour3000.v4";
 const COOLDOWN_KEY = "zufallstour3000.cooldownEnabled";
+const HOME_KEY = "zufallstour3000.homeStation";
 /** @typedef {{ id:string; name:string; types:("S"|"U"|"R")[]; lines?: string[]; visits: Visit[] }} Station */
 /** @typedef {{ date: string; note?: string; photos?: string[] }} Visit */
 const uid = () => Math.random().toString(36).slice(2, 10);
@@ -85,6 +87,8 @@ export default function App(){
   const lastRollRef = useRef(0);
   const [showMilestones, setShowMilestones] = useState(false);
   const [cooldownEnabled, setCooldownEnabled] = useState(()=>{ try{ return JSON.parse(localStorage.getItem(COOLDOWN_KEY) ?? "true"); }catch{ return true; }});
+  const [homeStation, setHomeStation] = useState(()=>{ try{ return localStorage.getItem(HOME_KEY) || ""; }catch{ return ""; }});
+  const [coords, setCoords] = useState(null);
 
   useEffect(()=>{
     if(token){
@@ -105,11 +109,30 @@ export default function App(){
     }
   }, [cooldownEnabled]);
   useEffect(()=>{
+    try {
+      localStorage.setItem(HOME_KEY, homeStation);
+    } catch (e) {
+      console.warn('Failed to persist home station', e);
+    }
+  }, [homeStation]);
+  useEffect(()=>{
+    if (typeof navigator !== 'undefined' && navigator.geolocation){
+      navigator.geolocation.getCurrentPosition(pos=>{
+        setCoords({lat:pos.coords.latitude, lon:pos.coords.longitude});
+      }, ()=>{});
+    }
+  }, []);
+  useEffect(()=>{
     if(token){
       fetchData(token).then(data=>{ if(data) setStations(normalizeStations(data)); }).catch(()=>setToken(null));
     }
   }, [token]);
   const visitedIds = useMemo(()=> new Set(stations.filter(s=>s.visits.length>0).map(s=>s.id)), [stations]);
+  const origin = coords ? `${coords.lat},${coords.lon}` : (homeStation.trim() || null);
+  const rolledStations = rolled.map(id=>stations.find(s=>s.id===id)).filter(Boolean);
+  const visitedCount = visitedIds.size, total = stations.length||1, percent = Math.round((visitedCount/total)*100);
+  const lastVisitDate = useMemo(()=>{ let max=""; stations.forEach(s=> s.visits.forEach(v=>{ if((v.date||"")>max) max=v.date; })); return max; }, [stations]);
+  const lineIndex = useMemo(()=>{ const map={}; stations.forEach(s=>{ (s.lines||[]).forEach(l=>{ if(!map[l]) map[l]={total:0,visited:0}; map[l].total+=1; if(s.visits.length>0) map[l].visited+=1; }); }); return map; }, [stations]);
 
   function handleLogin(tok){ setToken(tok); }
   function handleLogout(){ apiLogout(); setToken(null); }
@@ -216,11 +239,6 @@ export default function App(){
   }
   
 
-  const rolledStations = rolled.map(id=>stations.find(s=>s.id===id)).filter(Boolean);
-  const visitedCount = visitedIds.size, total = stations.length||1, percent = Math.round((visitedCount/total)*100);
-  const lastVisitDate = useMemo(()=>{ let max=""; stations.forEach(s=> s.visits.forEach(v=>{ if((v.date||"")>max) max=v.date; })); return max; }, [stations]);
-  const lineIndex = useMemo(()=>{ const map={}; stations.forEach(s=>{ (s.lines||[]).forEach(l=>{ if(!map[l]) map[l]={total:0,visited:0}; map[l].total+=1; if(s.visits.length>0) map[l].visited+=1; }); }); return map; }, [stations]);
-
   return (
     <div className="min-h-screen w-full bg-[repeating-linear-gradient(135deg,_#ffea61_0,_#ffea61_8px,_#ffd447_8px,_#ffd447_16px)] p-3 sm:p-6">
       <div className="max-w-3xl mx-auto">
@@ -277,7 +295,9 @@ export default function App(){
         {page==='home' && (
           <div className="space-y-3">
             {rolledStations.length===0 && (<div className="text-center text-sm opacity-80">Noch nichts ausgewürfelt … drück auf <b>WÜRFELN</b>! ✨</div>)}
-            {rolledStations.map(st=> (<StationRow key={st.id} st={st} onAddVisit={()=>setAddVisitFor(st)} onUnvisit={()=>removeAllVisits(st.id)} />))}
+            {rolledStations.map(st=> (
+              <StationRow key={st.id} st={st} origin={origin} onAddVisit={()=>setAddVisitFor(st)} onUnvisit={()=>removeAllVisits(st.id)} />
+            ))}
           </div>
         )}
 
@@ -293,6 +313,17 @@ export default function App(){
               <button onClick={exportJson} title="JSON exportieren" className="px-4 py-2 rounded-full bg-green-500 text-black font-extrabold border-4 border-black flex items-center gap-2"><Download size={18}/> Export</button>
               <label className="px-4 py-2 rounded-full bg-amber-300 text-black font-extrabold border-4 border-black flex items-center gap-2 cursor-pointer"><Upload size={18}/> Import<input type="file" accept="application/json" className="hidden" onChange={(e)=>e.target.files && importJson(e.target.files[0])} /></label>
             </div>
+          </div>
+          <div className="mt-4 rounded-2xl border-4 border-black p-4 bg-white/80">
+            <h3 className="font-extrabold text-lg mb-2">Home-Station</h3>
+            <input
+              type="text"
+              value={homeStation}
+              onChange={e=>setHomeStation(e.target.value)}
+              placeholder="z.B. Berlin Hbf"
+              className="w-full mt-1 px-3 py-2 rounded-lg border-4 border-black bg-white text-sm"
+            />
+            <p className="text-xs mt-1 opacity-80">Für Fahrzeiten, falls Standort nicht verfügbar.</p>
           </div>
           <div className="mt-4 rounded-2xl border-4 border-black p-4 bg-white/80">
             <h3 className="font-extrabold text-lg mb-2">Würfel-Cooldown</h3>
@@ -330,8 +361,17 @@ export default function App(){
 }
 
 // Station Row
-function StationRow({ st, onAddVisit, onUnvisit }){
+function StationRow({ st, origin, onAddVisit, onUnvisit }){
   const isVisited = st.visits.length>0; const lastVisit = isVisited ? st.visits[st.visits.length-1] : null;
+  const [duration, setDuration] = useState(null);
+  useEffect(()=>{
+    let cancelled = false;
+    if (!origin){ setDuration(null); return; }
+    fetchJourneyDuration(origin, st.name).then(d=>{
+      if(!cancelled) setDuration(d);
+    }).catch(()=>{});
+    return ()=>{ cancelled = true; };
+  }, [origin, st.name]);
   return (
     <div className="rounded-[22px] border-4 border-black bg-[#8c4bd6] text-white p-3 shadow-[8px_8px_0_0_rgba(0,0,0,0.6)]">
       <div className="flex items-start gap-3">
@@ -340,6 +380,7 @@ function StationRow({ st, onAddVisit, onUnvisit }){
           <div className="text-xs opacity-90 flex flex-col gap-1">
             {isVisited ? (<span>Besucht am <b>{formatDate(lastVisit.date)}</b></span>) : (<span>Noch unbesucht</span>)}
             {lastVisit?.note && (<span className="opacity-90 truncate">Notiz: {lastVisit.note}</span>)}
+            {duration!=null && (<span>≈ {duration} min</span>)}
           </div>
           <LineChips lines={st.lines} />
         </div>
