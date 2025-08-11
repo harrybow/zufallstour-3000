@@ -20,7 +20,16 @@ const HOME_KEY = "zufallstour3000.homeStation";
 /** @typedef {{ id:string; name:string; types:("S"|"U"|"R")[]; lines?: string[]; visits: Visit[] }} Station */
 /** @typedef {{ date: string; note?: string; photos?: string[] }} Visit */
 const uid = () => Math.random().toString(36).slice(2, 10);
-export const googleMapsUrl = (name) => `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(name + ", Berlin")}`;
+const stripRegionalPrefix = (name) => {
+  const match = /^([A-Z+]+)\s+(.*)$/.exec(name);
+  if (!match) return name;
+  const types = match[1].split('+').filter(t => t !== 'R');
+  return (types.length ? types.join('+') + ' ' : '') + match[2];
+};
+export const googleMapsUrl = (name) => {
+  const clean = stripRegionalPrefix(name);
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(clean + ", Berlin")}`;
+};
 export const stationLabel = (st) => {
   const prefix = Array.isArray(st?.types) && st.types.length
     ? [...st.types].sort().join('+')
@@ -481,12 +490,12 @@ function StationRow({ st, origin, onAddVisit, onUnvisit }){
   const { t } = useI18n();
   const isVisited = st.visits.length>0; const lastVisit = isVisited ? st.visits[st.visits.length-1] : null;
   const label = stationLabel(st);
-  const [duration, setDuration] = useState(null);
+  const [journey, setJourney] = useState(null);
   useEffect(()=>{
     let cancelled = false;
-    if (!origin){ setDuration(null); return; }
+    if (!origin){ setJourney(null); return; }
     fetchJourneyDuration(origin, label).then(d=>{
-      if(!cancelled) setDuration(d);
+      if(!cancelled) setJourney(d);
     }).catch(()=>{});
     return ()=>{ cancelled = true; };
   }, [origin, label]);
@@ -496,7 +505,7 @@ function StationRow({ st, origin, onAddVisit, onUnvisit }){
         <div className="flex-1 min-w-0">
           <div className="font-extrabold text-lg leading-tight truncate flex items-baseline gap-2">
             <span className="truncate">{label}</span>
-            <span className="text-xs font-normal opacity-90 whitespace-nowrap">{duration!=null ? `≈ ${duration} min` : 'n/a'}</span>
+            <span className="text-xs font-normal opacity-90 whitespace-nowrap">{journey?.minutes!=null ? `Anreise ≈ ${journey.minutes} min${journey.transfers!=null ? `, ${journey.transfers}x umsteigen` : ''}` : 'n/a'}</span>
           </div>
           <div className="text-xs opacity-90 flex flex-col gap-1">
             {isVisited ? (<span>{t('station.visitedOn')} <b>{formatDate(lastVisit.date)}</b></span>) : (<span>{t('station.notVisited')}</span>)}
