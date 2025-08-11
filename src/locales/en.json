@@ -20,6 +20,7 @@
   "settings.account.changePassword": "Change Password",
   "settings.account.delete": "Delete Account",
   "settings.account.logout": "Logout",
+  "settings.account.loggedInAs": "Logged in as",
   "settings.language": "Language",
   "settings.language.de": "German",
   "settings.language.en": "English",
