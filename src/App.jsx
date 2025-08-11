@@ -87,10 +87,23 @@ export default function App(){
   const [cooldownEnabled, setCooldownEnabled] = useState(()=>{ try{ return JSON.parse(localStorage.getItem(COOLDOWN_KEY) ?? "true"); }catch{ return true; }});
 
   useEffect(()=>{
-    if(token){ saveData(token, stations).catch(()=>{}); }
-    else { localStorage.setItem(STORAGE_KEY, JSON.stringify(stations)); }
+    if(token){
+      saveData(token, stations).catch(()=>{});
+    } else {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(stations));
+      } catch (e) {
+        console.warn('Failed to persist stations to localStorage', e);
+      }
+    }
   }, [stations, token]);
-  useEffect(()=>{ localStorage.setItem(COOLDOWN_KEY, JSON.stringify(cooldownEnabled)); }, [cooldownEnabled]);
+  useEffect(()=>{
+    try {
+      localStorage.setItem(COOLDOWN_KEY, JSON.stringify(cooldownEnabled));
+    } catch (e) {
+      console.warn('Failed to persist cooldown flag', e);
+    }
+  }, [cooldownEnabled]);
   useEffect(()=>{
     if(token){
       fetchData(token).then(data=>{ if(data) setStations(normalizeStations(data)); }).catch(()=>setToken(null));
