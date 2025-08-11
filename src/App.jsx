@@ -20,6 +20,12 @@ const HOME_KEY = "zufallstour3000.homeStation";
 /** @typedef {{ date: string; note?: string; photos?: string[] }} Visit */
 const uid = () => Math.random().toString(36).slice(2, 10);
 export const googleMapsUrl = (name) => `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(name + ", Berlin")}`;
+export const stationLabel = (st) => {
+  const prefix = Array.isArray(st?.types) && st.types.length
+    ? [...st.types].sort().join('+')
+    : '';
+  return prefix ? `${prefix} ${st.name}` : st.name;
+};
 const downloadFile = (filename, text, mime = "application/json;charset=utf-8") => {
   try {
     const blob = new Blob([text], { type: mime });
@@ -90,6 +96,12 @@ export default function App(){
   const [homeStation, setHomeStation] = useState(()=>{ try{ return localStorage.getItem(HOME_KEY) || ""; }catch{ return ""; }});
   const [coords, setCoords] = useState(null);
 
+  const stationLabelFromName = (name) => {
+    const n = normName(name);
+    const st = stations.find(s => normName(s.name) === n);
+    return st ? stationLabel(st) : name;
+  };
+
   function updateStations(updater){
     setStations(prev => {
       const next = typeof updater === 'function' ? updater(prev) : updater;
@@ -133,7 +145,7 @@ export default function App(){
     }
   }, [token]);
   const visitedIds = useMemo(()=> new Set(stations.filter(s=>s.visits.length>0).map(s=>s.id)), [stations]);
-  const origin = coords ? `${coords.lat},${coords.lon}` : (homeStation.trim() || null);
+  const origin = coords ? `${coords.lat},${coords.lon}` : (homeStation.trim() ? stationLabelFromName(homeStation.trim()) : null);
   const rolledStations = rolled.map(id=>stations.find(s=>s.id===id)).filter(Boolean);
   const visitedCount = visitedIds.size, total = stations.length||1, percent = Math.round((visitedCount/total)*100);
   const lastVisitDate = useMemo(()=>{ let max=""; stations.forEach(s=> s.visits.forEach(v=>{ if((v.date||"")>max) max=v.date; })); return max; }, [stations]);
@@ -389,31 +401,34 @@ export default function App(){
 // Station Row
 function StationRow({ st, origin, onAddVisit, onUnvisit }){
   const isVisited = st.visits.length>0; const lastVisit = isVisited ? st.visits[st.visits.length-1] : null;
+  const label = stationLabel(st);
   const [duration, setDuration] = useState(null);
   useEffect(()=>{
     let cancelled = false;
     if (!origin){ setDuration(null); return; }
-    fetchJourneyDuration(origin, st.name).then(d=>{
+    fetchJourneyDuration(origin, label).then(d=>{
       if(!cancelled) setDuration(d);
     }).catch(()=>{});
     return ()=>{ cancelled = true; };
-  }, [origin, st.name]);
+  }, [origin, label]);
   return (
     <div className="rounded-[22px] border-4 border-black bg-[#8c4bd6] text-white p-3 shadow-[8px_8px_0_0_rgba(0,0,0,0.6)]">
       <div className="flex items-start gap-3">
         <div className="flex-1 min-w-0">
-          <div className="font-extrabold text-lg leading-tight truncate">{st.name}</div>
+          <div className="font-extrabold text-lg leading-tight truncate flex items-baseline gap-2">
+            <span className="truncate">{label}</span>
+            <span className="text-xs font-normal opacity-90 whitespace-nowrap">{duration!=null ? `≈ ${duration} min` : 'n/a'}</span>
+          </div>
           <div className="text-xs opacity-90 flex flex-col gap-1">
             {isVisited ? (<span>Besucht am <b>{formatDate(lastVisit.date)}</b></span>) : (<span>Noch unbesucht</span>)}
             {lastVisit?.note && (<span className="opacity-90 truncate">Notiz: {lastVisit.note}</span>)}
-            {duration!=null && (<span>≈ {duration} min</span>)}
           </div>
           <LineChips lines={st.lines} types={st.types} />
         </div>
       </div>
 
       <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-2">
-        <a href={googleMapsUrl(st.name)} target="_blank" rel="noreferrer" className="w-full justify-center px-3 py-2 rounded-full bg-white text-black font-extrabold border-4 border-black flex items-center gap-2"><MapPin size={18}/> Maps</a>
+        <a href={googleMapsUrl(label)} target="_blank" rel="noreferrer" className="w-full justify-center px-3 py-2 rounded-full bg-white text-black font-extrabold border-4 border-black flex items-center gap-2"><MapPin size={18}/> Maps</a>
         <button onClick={onAddVisit} className="w-full justify-center px-3 py-2 rounded-full bg-amber-300 text-black font-extrabold border-4 border-black flex items-center gap-2"><Camera size={22}/> Besuch eintragen</button>
         {isVisited && (<button onClick={onUnvisit} className="w-full justify-center px-3 py-2 rounded-full bg-red-500 text-white font-extrabold border-4 border-black flex items-center gap-2"><Trash2 size={18}/> Besuch löschen</button>)}
       </div>

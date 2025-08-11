@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { formatDate, googleMapsUrl, pickThreeUnvisited, rollAllowed, makeDataUrl } from '../src/App.jsx';
+import { formatDate, googleMapsUrl, pickThreeUnvisited, rollAllowed, makeDataUrl, stationLabel } from '../src/App.jsx';
 
 describe('utility functions', () => {
   it('formats ISO dates in de-DE format', () => {
@@ -15,6 +15,11 @@ describe('utility functions', () => {
 
     const g2 = googleMapsUrl('Frankfurter Allee');
     expect(g2).toContain('Frankfurter%20Allee');
+  });
+
+  it('prefixes station names with their types', () => {
+    expect(stationLabel({ name: 'Ullsteinstraße', types: ['U'] })).toBe('U Ullsteinstraße');
+    expect(stationLabel({ name: 'Alexanderplatz', types: ['S', 'U'] })).toBe('S+U Alexanderplatz');
   });
 
   it('picks up to three unique unvisited stations', () => {
