@@ -12,6 +12,7 @@ import ZoomBox from "./components/ZoomBox";
 import Login from "./Login";
 import { fetchData, saveData, logout as apiLogout, deleteAccount, changePassword } from "./api.js";
 import { useI18n } from "./i18n.jsx";
+import { fileToDataUrl } from "./imageUtils.js";
 
 // Helpers & Types
 const STORAGE_KEY = "zufallstour3000.v4";
@@ -40,7 +41,6 @@ const downloadFile = (filename, text, mime = "application/json;charset=utf-8") =
     window.open(url, "_blank"); setTimeout(()=>URL.revokeObjectURL(url), 10000);
   }
 };
-const fileToDataUrl = (file) => new Promise((res, rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(file); });
 export const makeDataUrl = (text, mime="application/json;charset=utf-8") => URL.createObjectURL(new Blob([text], {type:mime}));
 export const pickThreeUnvisited = (stations/**:Station[]*/)=>{ const unvisited=stations.filter(s=>(s.visits?.length||0)===0); if(!unvisited.length) return []; const pool=[...unvisited]; for(let i=pool.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [pool[i],pool[j]]=[pool[j],pool[i]];} return pool.slice(0,Math.min(3,pool.length)).map(s=>s.id); };
 export const rollAllowed = (lastTs, now=Date.now()) => !lastTs || (now-lastTs)>=20000;
