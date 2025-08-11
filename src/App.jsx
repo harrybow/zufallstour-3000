@@ -11,6 +11,7 @@ import ManualVisitForm from "./components/ManualVisitForm";
 import ZoomBox from "./components/ZoomBox";
 import Login from "./Login";
 import { fetchData, saveData, logout as apiLogout, deleteAccount, changePassword } from "./api.js";
+import { useI18n } from "./i18n.jsx";
 
 // Helpers & Types
 const STORAGE_KEY = "zufallstour3000.v4";
@@ -81,6 +82,7 @@ const normName = (s) => String(s||"")
 
 // App
 export default function App(){
+  const { t, lang, setLang } = useI18n();
   const [token, setToken] = useState(()=>localStorage.getItem('authToken'));
   const [stations, setStations] = useState/** @type {Station[]} */(()=>{ try{ const raw=localStorage.getItem(STORAGE_KEY); if(raw) return normalizeStations(JSON.parse(raw));}catch{ /* ignore */ } return makeSeed(); });
   const [page, setPage] = useState/** @type {"home"|"visited"|"stations"} */("home");
@@ -355,19 +357,19 @@ export default function App(){
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
             <button onClick={doRoll} className={`w-full justify-center px-6 py-3 rounded-full text-xl font-black bg-gradient-to-r from-fuchsia-500 via-pink-500 to-orange-400 text-white flex items-center`} style={denyShake?{animation:"shake .6s"}:{}}>
-              <span className="inline-flex items-center gap-2 mx-auto"><Shuffle size={22}/> WÜRFELN</span>
+              <span className="inline-flex items-center gap-2 mx-auto"><Shuffle size={22}/> {t('roll')}</span>
             </button>
-            <button onClick={()=>setPage('visited')} className="w-full justify-center px-4 py-3 rounded-full font-bold bg-white text-black flex items-center gap-2 hover:brightness-110">Besuchte Bahnhöfe</button>
-            <button onClick={()=>setPage('stations')} className="w-full justify-center px-4 py-3 rounded-full font-bold bg-white text-black flex items-center gap-2 hover:brightness-110">Alle Bahnhöfe</button>
-            <button onClick={()=>setShowSettings(true)} className="w-full justify-center px-4 py-3 rounded-full font-bold bg-black text-white flex items-center" aria-label="Einstellungen" title="Einstellungen"><SettingsIcon size={20}/></button>
+            <button onClick={()=>setPage('visited')} className="w-full justify-center px-4 py-3 rounded-full font-bold bg-white text-black flex items-center gap-2 hover:brightness-110">{t('nav.visited')}</button>
+            <button onClick={()=>setPage('stations')} className="w-full justify-center px-4 py-3 rounded-full font-bold bg-white text-black flex items-center gap-2 hover:brightness-110">{t('nav.allStations')}</button>
+            <button onClick={()=>setShowSettings(true)} className="w-full justify-center px-4 py-3 rounded-full font-bold bg-black text-white flex items-center" aria-label={t('nav.settings')} title={t('nav.settings')}><SettingsIcon size={20}/></button>
           </div>
 
-          {lastVisitDate && (<div className="mt-3 text-sm opacity-80">Letzter Besuch: <b>{formatDate(lastVisitDate)}</b></div>)}
+          {lastVisitDate && (<div className="mt-3 text-sm opacity-80">{t('lastVisit.label')}: <b>{formatDate(lastVisitDate)}</b></div>)}
         </div>
 
         {page==='home' && (
           <div className="space-y-3">
-            {rolledStations.length===0 && (<div className="text-center text-sm opacity-80">Noch nichts ausgewürfelt … drück auf <b>WÜRFELN</b>! ✨</div>)}
+            {rolledStations.length===0 && (<div className="text-center text-sm opacity-80" dangerouslySetInnerHTML={{__html: t('home.noRoll').replace('{{roll}}', `<b>${t('roll')}</b>`)}} />)}
             {rolledStations.map(st=> (
               <StationRow key={st.id} st={st} origin={origin} onAddVisit={()=>setAddVisitFor(st)} onUnvisit={()=>removeAllVisits(st.id)} />
             ))}
@@ -382,28 +384,35 @@ export default function App(){
           <StationsPage stations={stations} onBack={()=>setPage('home')} />
         )}
 
-        <Modal open={showSettings} onClose={()=>setShowSettings(false)} title="Einstellungen">
+        <Modal open={showSettings} onClose={()=>setShowSettings(false)} title={t('settings.title')}>
           <div className="rounded-2xl border-4 border-black p-4 bg-white/80">
-            <h3 className="font-extrabold text-lg mb-2">Backups</h3>
-            <p className="text-sm mb-3">Exportiere/Importiere deine Daten als JSON.</p>
+            <h3 className="font-extrabold text-lg mb-2">{t('settings.language')}</h3>
+            <select value={lang} onChange={e=>setLang(e.target.value)} className="w-full mt-1 px-3 py-2 rounded-lg border-4 border-black bg-white text-sm">
+              <option value="de">{t('settings.language.de')}</option>
+              <option value="en">{t('settings.language.en')}</option>
+            </select>
+          </div>
+          <div className="mt-4 rounded-2xl border-4 border-black p-4 bg-white/80">
+            <h3 className="font-extrabold text-lg mb-2">{t('settings.backups')}</h3>
+            <p className="text-sm mb-3">{t('settings.backups.desc')}</p>
             <div className="flex gap-2 flex-wrap">
-              <button onClick={exportJson} title="JSON exportieren" className="px-4 py-2 rounded-full bg-green-500 text-black font-extrabold border-4 border-black flex items-center gap-2"><Download size={18}/> Export</button>
-              <label className="px-4 py-2 rounded-full bg-amber-300 text-black font-extrabold border-4 border-black flex items-center gap-2 cursor-pointer"><Upload size={18}/> Import<input type="file" accept="application/json" className="hidden" onChange={(e)=>e.target.files && importJson(e.target.files[0])} /></label>
+              <button onClick={exportJson} title="JSON exportieren" className="px-4 py-2 rounded-full bg-green-500 text-black font-extrabold border-4 border-black flex items-center gap-2"><Download size={18}/> {t('settings.export')}</button>
+              <label className="px-4 py-2 rounded-full bg-amber-300 text-black font-extrabold border-4 border-black flex items-center gap-2 cursor-pointer"><Upload size={18}/> {t('settings.import')}<input type="file" accept="application/json" className="hidden" onChange={(e)=>e.target.files && importJson(e.target.files[0])} /></label>
             </div>
           </div>
           <div className="mt-4 rounded-2xl border-4 border-black p-4 bg-white/80">
-            <h3 className="font-extrabold text-lg mb-2">Home-Station</h3>
+            <h3 className="font-extrabold text-lg mb-2">{t('settings.homeStation')}</h3>
             <input
               type="text"
               value={homeStation}
               onChange={e=>setHomeStation(e.target.value)}
-              placeholder="z.B. Berlin Hbf"
+              placeholder={t('settings.homeStation.placeholder')}
               className="w-full mt-1 px-3 py-2 rounded-lg border-4 border-black bg-white text-sm"
             />
-            <p className="text-xs mt-1 opacity-80">Für Fahrzeiten, falls Standort nicht verfügbar.</p>
+            <p className="text-xs mt-1 opacity-80">{t('settings.homeStation.hint')}</p>
           </div>
           <div className="mt-4 rounded-2xl border-4 border-black p-4 bg-white/80">
-            <h3 className="font-extrabold text-lg mb-2">Würfel-Cooldown</h3>
+            <h3 className="font-extrabold text-lg mb-2">{t('settings.cooldown')}</h3>
             <label className="flex items-center gap-2 text-sm">
               <input
                 type="checkbox"
@@ -411,57 +420,57 @@ export default function App(){
                 checked={cooldownEnabled}
                 onChange={e=>setCooldownEnabled(e.target.checked)}
               />
-              <span>20-Sekunden-Cooldown aktiv</span>
+              <span>{t('settings.cooldown.label')}</span>
             </label>
-            <p className="text-xs mt-1 opacity-80">Deaktivieren, um ohne „srsly?“-Hinweis schnell zu würfeln.</p>
+            <p className="text-xs mt-1 opacity-80">{t('settings.cooldown.desc')}</p>
           </div>
           <div className="mt-4 rounded-2xl border-4 border-black p-4 bg-white/80">
-            <h3 className="font-extrabold text-lg mb-2">Konto</h3>
+            <h3 className="font-extrabold text-lg mb-2">{t('settings.account')}</h3>
             <div className="flex flex-col sm:flex-row gap-2 w-full">
               <button
                 onClick={()=>setShowChangePassword(true)}
                 className="w-full sm:flex-1 sm:basis-0 px-4 py-2 rounded-full bg-blue-500 text-white font-extrabold border-4 border-black flex items-center justify-center gap-2"
-              ><KeyRound size={18}/> Passwort ändern</button>
+              ><KeyRound size={18}/> {t('settings.account.changePassword')}</button>
 
               <button
                 onClick={()=>setShowDeleteAccount(true)}
                 className="w-full sm:flex-1 sm:basis-0 px-4 py-2 rounded-full bg-red-600 text-white font-extrabold border-4 border-black flex items-center justify-center gap-2"
-              ><Trash2 size={18}/> Konto löschen</button>
+              ><Trash2 size={18}/> {t('settings.account.delete')}</button>
 
               <button
                 onClick={handleLogout}
                 className="w-full sm:flex-1 sm:basis-0 px-4 py-2 rounded-full bg-white text-black font-extrabold border-4 border-black flex items-center justify-center gap-2"
-              ><LogOut size={18}/> Logout</button>
+              ><LogOut size={18}/> {t('settings.account.logout')}</button>
             </div>
           </div>
         </Modal>
 
-        <Modal open={exportDialog.open} onClose={()=>{ try{ URL.revokeObjectURL(exportDialog.href);}catch{ /* ignore */ } setExportDialog(p=>({...p, open:false})); }} title="Backup exportiert">
+        <Modal open={exportDialog.open} onClose={()=>{ try{ URL.revokeObjectURL(exportDialog.href);}catch{ /* ignore */ } setExportDialog(p=>({...p, open:false})); }} title={t('settings.backupExported.title')}>
           <div className="space-y-3">
-            <p className="text-sm">Falls dein Browser den automatischen Download blockiert, nutze diesen Link:</p>
+            <p className="text-sm">{t('settings.backupExported.info')}</p>
             <a href={exportDialog.href} download={exportDialog.filename} className="px-4 py-2 rounded-full bg-green-500 border-4 border-black font-extrabold inline-flex items-center gap-2 cursor-pointer"><Download size={18}/> {exportDialog.filename}</a>
-            <div><p className="text-sm mb-1">Oder kopiere den JSON-Inhalt:</p><textarea readOnly value={exportDialog.text} className="w-full h-40 p-2 rounded-lg border-4 border-black bg-white text-xs"></textarea></div>
+            <div><p className="text-sm mb-1">{t('settings.backupExported.copy')}</p><textarea readOnly value={exportDialog.text} className="w-full h-40 p-2 rounded-lg border-4 border-black bg-white text-xs"></textarea></div>
           </div>
         </Modal>
 
-        <Modal open={showChangePassword} onClose={()=>setShowChangePassword(false)} title="Passwort ändern">
+        <Modal open={showChangePassword} onClose={()=>setShowChangePassword(false)} title={t('settings.account.changePassword')}>
           <ChangePasswordForm onSave={submitChangePassword} onCancel={()=>setShowChangePassword(false)} />
         </Modal>
 
-        <Modal open={showDeleteAccount} onClose={()=>setShowDeleteAccount(false)} title="Konto löschen">
+        <Modal open={showDeleteAccount} onClose={()=>setShowDeleteAccount(false)} title={t('deleteAccount.title')}>
           <div className="space-y-3">
-            <p className="text-sm">Willst du dein Konto dauerhaft löschen? Alle Daten werden entfernt.</p>
-            <div className="flex gap-2 justify-end"><button onClick={()=>setShowDeleteAccount(false)} className="px-4 py-2 rounded-lg bg-white">Abbrechen</button><button onClick={confirmDeleteAccount} className="px-4 py-2 rounded-lg bg-red-600 text-white">Löschen</button></div>
+            <p className="text-sm">{t('deleteAccount.confirm')}</p>
+            <div className="flex gap-2 justify-end"><button onClick={()=>setShowDeleteAccount(false)} className="px-4 py-2 rounded-lg bg-white">{t('deleteAccount.cancel')}</button><button onClick={confirmDeleteAccount} className="px-4 py-2 rounded-lg bg-red-600 text-white">{t('deleteAccount.delete')}</button></div>
           </div>
         </Modal>
 
         <MilestonesModal open={showMilestones} onClose={()=>setShowMilestones(false)} percent={percent} visitedCount={visitedCount} total={total} lineIndex={lineIndex} typeStats={typeStats} stations={stations} />
 
-        <Modal open={!!addVisitFor} onClose={()=>setAddVisitFor(null)} title={`Besuch eintragen – ${addVisitFor?.name ?? ''}`}>
+        <Modal open={!!addVisitFor} onClose={()=>setAddVisitFor(null)} title={`${t('station.addVisit')} – ${addVisitFor?.name ?? ''}`}>
           {addVisitFor && (<AddVisitForm onSave={addVisit} stationId={addVisitFor.id} />)}
         </Modal>
 
-        <div className="mt-10 text-center text-xs opacity-70"><p>Made with ❤ von BrittaFan3000.</p></div>
+        <div className="mt-10 text-center text-xs opacity-70"><p>{t('footer.madeWith')}</p></div>
       </div>
     </div>
   );
@@ -469,6 +478,7 @@ export default function App(){
 
 // Station Row
 function StationRow({ st, origin, onAddVisit, onUnvisit }){
+  const { t } = useI18n();
   const isVisited = st.visits.length>0; const lastVisit = isVisited ? st.visits[st.visits.length-1] : null;
   const label = stationLabel(st);
   const [duration, setDuration] = useState(null);
@@ -489,17 +499,17 @@ function StationRow({ st, origin, onAddVisit, onUnvisit }){
             <span className="text-xs font-normal opacity-90 whitespace-nowrap">{duration!=null ? `≈ ${duration} min` : 'n/a'}</span>
           </div>
           <div className="text-xs opacity-90 flex flex-col gap-1">
-            {isVisited ? (<span>Besucht am <b>{formatDate(lastVisit.date)}</b></span>) : (<span>Noch unbesucht</span>)}
-            {lastVisit?.note && (<span className="opacity-90 truncate">Notiz: {lastVisit.note}</span>)}
+            {isVisited ? (<span>{t('station.visitedOn')} <b>{formatDate(lastVisit.date)}</b></span>) : (<span>{t('station.notVisited')}</span>)}
+            {lastVisit?.note && (<span className="opacity-90 truncate">{t('station.note')}: {lastVisit.note}</span>)}
           </div>
           <LineChips lines={st.lines} types={st.types} />
         </div>
       </div>
 
       <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-2">
-        <a href={googleMapsUrl(label)} target="_blank" rel="noreferrer" className="w-full justify-center px-3 py-2 rounded-full bg-white text-black font-extrabold border-4 border-black flex items-center gap-2"><MapPin size={18}/> Maps</a>
-        <button onClick={onAddVisit} className="w-full justify-center px-3 py-2 rounded-full bg-amber-300 text-black font-extrabold border-4 border-black flex items-center gap-2"><Camera size={22}/> Besuch eintragen</button>
-        {isVisited && (<button onClick={onUnvisit} className="w-full justify-center px-3 py-2 rounded-full bg-red-500 text-white font-extrabold border-4 border-black flex items-center gap-2"><Trash2 size={18}/> Besuch löschen</button>)}
+        <a href={googleMapsUrl(label)} target="_blank" rel="noreferrer" className="w-full justify-center px-3 py-2 rounded-full bg-white text-black font-extrabold border-4 border-black flex items-center gap-2"><MapPin size={18}/> {t('station.maps')}</a>
+        <button onClick={onAddVisit} className="w-full justify-center px-3 py-2 rounded-full bg-amber-300 text-black font-extrabold border-4 border-black flex items-center gap-2"><Camera size={22}/> {t('station.addVisit')}</button>
+        {isVisited && (<button onClick={onUnvisit} className="w-full justify-center px-3 py-2 rounded-full bg-red-500 text-white font-extrabold border-4 border-black flex items-center gap-2"><Trash2 size={18}/> {t('station.deleteVisit')}</button>)}
       </div>
 
       {lastVisit?.photos?.[0] && (<div className="mt-3"><img src={lastVisit.photos[0]} alt="Besuchsbild" className="w-full max-h-72 object-cover rounded-xl border-4 border-black"/></div>)}
@@ -743,17 +753,18 @@ function ChangePasswordForm({ onSave, onCancel }){
 
 // Add Visit Form
 function AddVisitForm({ stationId, onSave }){
+  const { t } = useI18n();
   const [date, setDate] = useState(()=> new Date().toISOString().slice(0,10));
   const [note, setNote] = useState("");
   const [photos, setPhotos] = useState([]);
   async function onFile(e){ const files=Array.from(e.target.files||[]); if(!files.length) return; const urls=await Promise.all(files.map(fileToDataUrl)); setPhotos(p=>[...p, ...urls]); }
-  function submit(){ if(!date) return alert("Bitte Datum wählen"); onSave(stationId, { date, note: note.trim()||undefined, photos: photos.length?photos:undefined }); }
+  function submit(){ if(!date) return alert(t('addVisitForm.dateRequired')); onSave(stationId, { date, note: note.trim()||undefined, photos: photos.length?photos:undefined }); }
   return (
     <div className="space-y-3">
-      <div><label className="font-bold text-sm">Datum</label><input type="date" value={date} onChange={e=>setDate(e.target.value)} className="w-full mt-1 px-3 py-2 rounded-lg border-4 border-black bg-white"/></div>
-      <div><label className="font-bold text-sm">Notiz (optional)</label><textarea value={note} onChange={e=>setNote(e.target.value)} rows={3} className="w-full mt-1 px-3 py-2 rounded-lg border-2 border-black bg-white" placeholder="z.B. Sonnenuntergang auf der Brücke 🌇"/></div>
-      <div><label className="font-bold text-sm block mb-1">Fotos (optional)</label><label className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-300 border-4 border-black cursor-pointer font-extrabold"><Camera size={18}/> Datei wählen<input type="file" accept="image/*" multiple className="hidden" onChange={onFile}/></label>{photos.length>0 && (<div className="mt-2 flex flex-wrap gap-2">{photos.map((p,i)=>(<img key={i} src={p} alt="Preview" className="max-h-56 rounded-xl border-4 border-black"/>))}</div>)}</div>
-      <div className="flex"><button onClick={submit} className="w-full md:w-auto px-6 py-2 rounded-full bg-black text-white font-extrabold border-4 border-black">Speichern</button></div>
+      <div><label className="font-bold text-sm">{t('addVisitForm.date')}</label><input type="date" value={date} onChange={e=>setDate(e.target.value)} className="w-full mt-1 px-3 py-2 rounded-lg border-4 border-black bg-white"/></div>
+      <div><label className="font-bold text-sm">{t('addVisitForm.note')}</label><textarea value={note} onChange={e=>setNote(e.target.value)} rows={3} className="w-full mt-1 px-3 py-2 rounded-lg border-2 border-black bg-white" placeholder="z.B. Sonnenuntergang auf der Brücke 🌇"/></div>
+      <div><label className="font-bold text-sm block mb-1">{t('addVisitForm.photos')}</label><label className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-300 border-4 border-black cursor-pointer font-extrabold"><Camera size={18}/> {t('addVisitForm.chooseFile')}<input type="file" accept="image/*" multiple className="hidden" onChange={onFile}/></label>{photos.length>0 && (<div className="mt-2 flex flex-wrap gap-2">{photos.map((p,i)=>(<img key={i} src={p} alt="Preview" className="max-h-56 rounded-xl border-4 border-black"/>))}</div>)}</div>
+      <div className="flex"><button onClick={submit} className="w-full md:w-auto px-6 py-2 rounded-full bg-black text-white font-extrabold border-4 border-black">{t('addVisitForm.save')}</button></div>
     </div>
   );
 }

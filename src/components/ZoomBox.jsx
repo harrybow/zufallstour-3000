@@ -1,7 +1,9 @@
 import React, { useRef, useState } from "react";
+import { useI18n } from "../i18n.jsx";
 
 export default function ZoomBox({ src }){
   const wrapRef = useRef(null);
+  const { t } = useI18n();
   const [scale, setScale] = useState(1);
   const [pos, setPos] = useState({ x: 0, y: 0 });
   const dragging = useRef(false);
@@ -16,7 +18,7 @@ export default function ZoomBox({ src }){
       <div className="absolute top-2 right-2 z-10 flex gap-2">
         <button onClick={() => setScale(s=>Math.min(5,s*1.1))} className="px-3 py-1 rounded-lg bg-white">+</button>
         <button onClick={() => setScale(s=>Math.max(1,s/1.1))} className="px-3 py-1 rounded-lg bg-white">-</button>
-        <button onClick={reset} className="px-3 py-1 rounded-lg bg-white">Reset</button>
+        <button onClick={reset} className="px-3 py-1 rounded-lg bg-white">{t('zoom.reset')}</button>
       </div>
       <div ref={wrapRef} onWheel={onWheel} onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp} className="w-full h-full flex items-center justify-center touch-none cursor-grab active:cursor-grabbing">
         <img src={src} alt="Zoom" style={{ transform:`translate(${pos.x}px, ${pos.y}px) scale(${scale})` }} className="max-w-none max-h-none" />
