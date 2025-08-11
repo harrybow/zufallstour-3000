@@ -133,6 +133,21 @@ export default function App(){
   const visitedCount = visitedIds.size, total = stations.length||1, percent = Math.round((visitedCount/total)*100);
   const lastVisitDate = useMemo(()=>{ let max=""; stations.forEach(s=> s.visits.forEach(v=>{ if((v.date||"")>max) max=v.date; })); return max; }, [stations]);
   const lineIndex = useMemo(()=>{ const map={}; stations.forEach(s=>{ (s.lines||[]).forEach(l=>{ if(!map[l]) map[l]={total:0,visited:0}; map[l].total+=1; if(s.visits.length>0) map[l].visited+=1; }); }); return map; }, [stations]);
+  const typeStats = useMemo(()=>{
+    const stats = { S: { total: 0, visited: 0 }, U: { total: 0, visited: 0 } };
+    stations.forEach(s => {
+      if (s.types.includes("S")) {
+        stats.S.total += 1;
+        if (s.visits.length > 0) stats.S.visited += 1;
+      }
+      if (s.types.includes("U")) {
+        stats.U.total += 1;
+        if (s.visits.length > 0) stats.U.visited += 1;
+      }
+    });
+    return stats;
+  }, [stations]);
+  const photoCount = useMemo(()=> stations.reduce((acc,s)=> acc + s.visits.reduce((sum,v)=> sum + (v.photos?.length||0),0),0), [stations]);
 
   function handleLogin(tok){ setToken(tok); }
   function handleLogout(){ apiLogout(); setToken(null); }
@@ -271,6 +286,7 @@ export default function App(){
             <div className="flex items-center gap-2 mb-1">
               <div className="font-extrabold text-sm">Fortschritt</div>
               <div className="text-xs opacity-80">{visitedCount}/{total} ({percent}%)</div>
+              <div className="text-xs opacity-80 flex items-center gap-1"><Camera size={12}/> {photoCount}</div>
               <button onClick={()=>setShowMilestones(true)} className="ml-auto text-xs px-2 py-1 rounded-full border-2 border-black bg-white flex items-center gap-1"><Trophy size={14}/> Meilensteine</button>
             </div>
             <div onClick={()=>setShowMilestones(true)} className="relative h-4 rounded-full border-4 border-black bg-white cursor-pointer">
@@ -348,7 +364,7 @@ export default function App(){
           </div>
         </Modal>
 
-        <MilestonesModal open={showMilestones} onClose={()=>setShowMilestones(false)} percent={percent} visitedCount={visitedCount} total={total} lineIndex={lineIndex} />
+        <MilestonesModal open={showMilestones} onClose={()=>setShowMilestones(false)} percent={percent} visitedCount={visitedCount} total={total} lineIndex={lineIndex} typeStats={typeStats} />
 
         <Modal open={!!addVisitFor} onClose={()=>setAddVisitFor(null)} title={`Besuch eintragen – ${addVisitFor?.name ?? ''}`}>
           {addVisitFor && (<AddVisitForm onSave={addVisit} stationId={addVisitFor.id} />)}
@@ -564,14 +580,21 @@ function AddVisitForm({ stationId, onSave }){
 }
 
 // Milestones Modal
-function MilestonesModal({ open, onClose, percent, visitedCount, total, lineIndex }){
+function MilestonesModal({ open, onClose, percent, visitedCount, total, lineIndex, typeStats }){
   if(!open) return null; const percentMilestones=[25,50,75,100], countMilestones=[10,25,50];
+  const { S = { total:0, visited:0 }, U = { total:0, visited:0 } } = typeStats || {};
   return (
     <Modal open={open} onClose={onClose} title="Meilensteine">
       <div className="space-y-6">
         <section><div className="font-extrabold mb-2">Gesamt-Fortschritt</div><div className="w-full h-4 rounded-full border-4 border-black bg-white"><div className="h-full bg-green-500" style={{width:`${percent}%`}}/></div><div className="text-sm mt-1">{visitedCount}/{total} ({percent}%)</div></section>
         <section><div className="font-extrabold mb-2">Prozent-Ziele</div><div className="grid grid-cols-2 sm:grid-cols-4 gap-2">{percentMilestones.map(p=> (<div key={p} className={`rounded-xl border-4 border-black p-2 text-center ${percent>=p?"bg-green-300":"bg-white"}`}><div className="font-black">{p}%</div><div className="text-xs flex items-center justify-center gap-1">{percent>=p?<Check size={14}/> : null} {percent>=p?"erreicht":"offen"}</div></div>))}</div></section>
         <section><div className="font-extrabold mb-2">Anzahl-Ziele</div><div className="grid grid-cols-3 gap-2">{countMilestones.map(c=> (<div key={c} className={`rounded-xl border-4 border-black p-2 text-center ${visitedCount>=c?"bg-green-300":"bg-white"}`}><div className="font-black">{c}</div><div className="text-xs flex items-center justify-center gap-1">{visitedCount>=c?<Check size={14}/> : null} {visitedCount>=c?"erreicht":"offen"}</div></div>))}</div></section>
+        <section><div className="font-extrabold mb-2">Netz-Ziele</div><div className="grid grid-cols-1 sm:grid-cols-2 gap-2">{[
+          { label: "100% S-Bahnhöfe", stat: S },
+          { label: "100% U-Bahnhöfe", stat: U },
+        ].map(({label, stat}) => { const done = stat.visited >= stat.total && stat.total > 0; const pct = stat.total ? Math.round((stat.visited/stat.total)*100) : 0; return (
+          <div key={label} className={`rounded-xl border-4 border-black p-2 text-center ${done?"bg-green-300":"bg-white"}`}><div className="font-black">{label}</div><div className="text-xs flex items-center justify-center gap-1">{done?<Check size={14}/> : null} {done?"erreicht":`${stat.visited}/${stat.total} (${pct}%)`}</div></div>
+        ); })}</div></section>
         <section><div className="font-extrabold mb-2">Linien</div><div className="grid grid-cols-1 sm:grid-cols-2 gap-2">{Object.entries(lineIndex).map(([line,stat])=>{ const done=stat.visited>=stat.total&&stat.total>0; const pct=Math.round((stat.visited/stat.total)*100); return (<div key={line} className={`rounded-xl border-4 border-black p-2 ${done?"bg-green-200":"bg-white"}`}><div className="flex items-center gap-2 mb-1"><span className="px-2 py-0.5 text-xs font-black rounded-full border-2 border-black bg-white">{line}</span><div className="text-xs ml-auto">{stat.visited}/{stat.total} ({pct}%)</div></div><div className="w-full h-3 rounded-full border-2 border-black bg-white"><div className="h-full bg-green-500" style={{width:`${pct}%`}}/></div></div>); })}</div></section>
       </div>
     </Modal>
