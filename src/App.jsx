@@ -479,10 +479,15 @@ function StationsPage({ stations, onBack }){
       <div className="space-y-2 max-h-[60vh] overflow-y-auto pr-1">
         {sorted.length===0 && (<div className="text-sm">Keine Bahnhöfe gefunden.</div>)}
         {sorted.map(st => (
-          <div key={st.id} className="p-2 border-2 border-black rounded-lg bg-white">
+          <div
+            key={st.id}
+            className={`p-2 border-2 border-black rounded-lg ${st.visits.length ? 'bg-[#8c4bd6] text-white' : 'bg-white'}`}
+          >
             <div className="font-bold truncate">{st.name}</div>
             <LineChips lines={st.lines} types={st.types} />
-            <div className="text-xs mt-1">{st.visits.length?`Zuletzt am ${formatDate(st.visits[st.visits.length-1].date)}`:'Noch nie besucht'}</div>
+            <div className="text-xs mt-1">
+              {st.visits.length ? `Zuletzt am ${formatDate(st.visits[st.visits.length - 1].date)}` : 'Noch nie besucht'}
+            </div>
           </div>
         ))}
       </div>
