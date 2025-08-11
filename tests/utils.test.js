@@ -15,6 +15,10 @@ describe('utility functions', () => {
 
     const g2 = googleMapsUrl('Frankfurter Allee');
     expect(g2).toContain('Frankfurter%20Allee');
+
+    const g3 = googleMapsUrl('R+S+U Berlin Hbf');
+    expect(g3).toContain('S%2BU%20Berlin%20Hbf');
+    expect(g3).not.toContain('R%');
   });
 
   it('prefixes station names with their types', () => {
