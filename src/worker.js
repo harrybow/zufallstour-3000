@@ -7,7 +7,7 @@ import { dataGet, dataPost } from './api/data.js';
 import { profileGet } from './api/profile.js';
 
 export default {
-  async fetch(request, env, ctx) {
+  async fetch(request, env) {
     const url = new URL(request.url);
     const { pathname } = url;
 
