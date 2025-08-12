@@ -1,6 +1,6 @@
 import React from "react";
-import logo from "../assets/header-logo.svg";
-import { useI18n } from "../i18n.jsx";
+import logo from "../../assets/header-logo.svg";
+import { useI18n } from "../../i18n.jsx";
 
 export default function HeaderLogo({ className = "" }) {
   const { t } = useI18n();

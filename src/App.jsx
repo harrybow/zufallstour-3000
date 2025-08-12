@@ -3,18 +3,23 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { Settings as SettingsIcon, Shuffle, MapPin, Camera, Upload, Download, Trash2, ArrowUpDown, Check, ChevronLeft, Trophy, Pencil, ImageUp, KeyRound, LogOut, ArrowUp, HelpCircle, Plus, X } from "lucide-react";
 import { fetchJourneyDuration } from "./journeys";
 import { seedStations } from "./seed_stations";
-import HeaderLogo from "./components/HeaderLogo";
+import HeaderLogo from "./components/navigation/HeaderLogo";
 import LineChips from "./components/LineChips";
 import Modal from "./components/Modal";
 import ComboBox from "./components/ComboBox";
 import ManualVisitForm from "./components/ManualVisitForm";
 import ZoomBox from "./components/ZoomBox";
+import ChangePasswordForm from "./components/settings/ChangePasswordForm";
+import AddVisitForm from "./components/settings/AddVisitForm";
+import MilestonesModal from "./components/milestones/MilestonesModal";
+import useScrollTop from "./hooks/useScrollTop";
 import Login from "./Login";
 import { fetchData, saveData, logout as apiLogout, deleteAccount, changePassword } from "./api.js";
 import { useI18n } from "./i18n.jsx";
 import { fileToDataUrl } from "./imageUtils.js";
 import helpDe from "./help.de.html?raw";
 import helpEn from "./help.en.html?raw";
+import { formatDate } from "./formatDate.js";
 
 // Helpers & Types
 const STORAGE_KEY = "zufallstour3000.v4";
@@ -111,7 +116,7 @@ export default function App(){
   const [showMilestones, setShowMilestones] = useState(false);
   const [cooldownEnabled, setCooldownEnabled] = useState(()=>{ try{ return JSON.parse(localStorage.getItem(COOLDOWN_KEY) ?? "true"); }catch{ return true; }});
   const [homeStation, setHomeStation] = useState(()=>{ try{ return localStorage.getItem(HOME_KEY) || ""; }catch{ return ""; }});
-  const [showScrollTop, setShowScrollTop] = useState(false);
+  const { showScrollTop, scrollToTop } = useScrollTop();
   const helpHtml = lang === "de" ? helpDe : helpEn;
 
   const stationLabelFromName = (name) => {
@@ -155,14 +160,6 @@ export default function App(){
       fetchData(token).then(data=>{ if(data) updateStations(normalizeStations(data)); }).catch(()=>setToken(null));
     }
   }, [token, updateStations]);
-  useEffect(() => {
-    const onScroll = () => {
-      setShowScrollTop(window.scrollY > window.innerHeight * 1.5);
-    };
-    window.addEventListener('scroll', onScroll);
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
-  const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
   const visitedIds = useMemo(()=> new Set(stations.filter(s=>s.visits.length>0).map(s=>s.id)), [stations]);
   const origin = homeStation.trim() ? stationLabelFromName(homeStation.trim()) : null;
   const rolledStations = rolled.map(id=>stations.find(s=>s.id===id)).filter(Boolean);
@@ -880,111 +877,3 @@ function VisitedPage({ stations, onBack, onAddVisit, onClearVisits, onAttachPhot
   );
 }
 
-// Change Password Form
-function ChangePasswordForm({ onSave, onCancel }){
-  const [oldPw, setOldPw] = useState('');
-  const [newPw, setNewPw] = useState('');
-  return (
-    <div className="space-y-3">
-      <div><label className="font-bold text-sm">Altes Passwort</label><input type="password" value={oldPw} onChange={e=>setOldPw(e.target.value)} className="w-full mt-1 px-3 py-2 rounded-lg border-4 border-black bg-white"/></div>
-      <div><label className="font-bold text-sm">Neues Passwort</label><input type="password" value={newPw} onChange={e=>setNewPw(e.target.value)} className="w-full mt-1 px-3 py-2 rounded-lg border-4 border-black bg-white"/></div>
-      <div className="flex gap-2 justify-end"><button onClick={onCancel} className="px-4 py-2 rounded-lg bg-white">Abbrechen</button><button onClick={()=>onSave(oldPw, newPw)} className="px-4 py-2 rounded-lg bg-black text-white">Speichern</button></div>
-    </div>
-  );
-}
-
-// Add Visit Form
-function AddVisitForm({ stationId, onSave }){
-  const { t } = useI18n();
-  const [date, setDate] = useState(()=> new Date().toISOString().slice(0,10));
-  const [note, setNote] = useState("");
-  const [photos, setPhotos] = useState([]);
-  async function onFile(e){ const files=Array.from(e.target.files||[]); if(!files.length) return; const urls=await Promise.all(files.map(fileToDataUrl)); setPhotos(p=>[...p, ...urls]); }
-  function submit(){ if(!date) return alert(t('addVisitForm.dateRequired')); onSave(stationId, { date, note: note.trim()||undefined, photos: photos.length?photos:undefined }); }
-  return (
-    <div className="space-y-3">
-      <div><label className="font-bold text-sm">{t('addVisitForm.date')}</label><input type="date" value={date} onChange={e=>setDate(e.target.value)} className="w-full mt-1 px-3 py-2 rounded-lg border-4 border-black bg-white"/></div>
-      <div><label className="font-bold text-sm">{t('addVisitForm.note')}</label><textarea value={note} onChange={e=>setNote(e.target.value)} rows={3} className="w-full mt-1 px-3 py-2 rounded-lg border-2 border-black bg-white" placeholder="z.B. Sonnenuntergang auf der Brücke 🌇"/></div>
-      <div><label className="font-bold text-sm block mb-1">{t('addVisitForm.photos')}</label><label className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-300 border-4 border-black cursor-pointer font-extrabold"><Camera size={18}/> {t('addVisitForm.chooseFile')}<input type="file" accept="image/*" multiple className="hidden" onChange={onFile}/></label>{photos.length>0 && (<div className="mt-2 flex flex-wrap gap-2">{photos.map((p,i)=>(<img key={i} src={p} alt="Preview" className="max-h-56 rounded-xl border-4 border-black"/>))}</div>)}</div>
-      <div className="flex"><button onClick={submit} className="w-full md:w-auto px-6 py-2 rounded-full bg-black text-white font-extrabold border-4 border-black">{t('addVisitForm.save')}</button></div>
-    </div>
-  );
-}
-
-// Milestones Modal
-function HoverCard({ info, children }) {
-  return (
-    <div className="relative group">
-      {children}
-      <div className="pointer-events-none absolute z-20 hidden group-hover:block group-focus-within:block left-1/2 -translate-x-1/2 top-full mt-1 w-56 p-2 rounded-lg border-2 border-black bg-white text-xs shadow">
-        {info}
-      </div>
-    </div>
-  );
-}
-
-function MilestonesModal({ open, onClose, percent, visitedCount, total, lineIndex, typeStats, stations }) {
-  const firstVisitDates = useMemo(()=> stations.map(s=>s.visits[0]?.date).filter(Boolean).sort(), [stations]);
-  const dateForCount = (n) => firstVisitDates[n-1] || null;
-  const { S = { total:0, visited:0 }, U = { total:0, visited:0 }, R = { total:0, visited:0 } } = typeStats || {};
-  if(!open) return null;
-  const stationMilestones = [
-    { label:"1. Besuch", count:1, desc:"Erster besuchter Bahnhof" },
-    { label:"Hattrick", count:3, desc:"3 besuchte Bahnhöfe" },
-    { label:"10%", percent:10 },
-    { label:"25%", percent:25 },
-    { label:"50%", percent:50 },
-    { label:"75%", percent:75 },
-    { label:"Fast geschafft!", count: Math.max(total-3,0), desc:"Nur noch 3 Bahnhöfe bis 100%" },
-    { label:"100%", percent:100 }
-  ].map(m=>{
-    const count = m.count ?? Math.ceil(total*(m.percent/100));
-    const done = visitedCount >= count;
-    const date = done ? dateForCount(count) : null;
-    const base = m.percent
-      ? `${m.label} - das entspricht ${Math.round(total*(m.percent/100))} besuchten Bahnhöfen`
-      : m.desc;
-    const info = done
-      ? `${base}. Erreicht am: ${formatDate(date)}`
-      : `${base}. Noch nicht erreicht.`;
-    return { ...m, count, done, info };
-  });
-  return (
-    <Modal open={open} onClose={onClose} title="Meilensteine">
-      <div className="space-y-6">
-        <section><div className="font-extrabold mb-2">Gesamt-Fortschritt</div><div className="w-full h-4 rounded-full border-4 border-black bg-white overflow-hidden">{percent>0 && (<div className="h-full bg-green-500" style={{width:`${percent}%`}}/> )}</div><div className="text-sm mt-1">{visitedCount}/{total} ({percent}%)</div></section>
-        <section><div className="font-extrabold mb-2">Stationen-Ziele</div><div className="grid grid-cols-2 sm:grid-cols-4 gap-2">{stationMilestones.map(m=> (
-          <HoverCard key={m.label} info={m.info}>
-            <button type="button" className={`w-full rounded-xl border-4 border-black p-2 text-center ${m.done?"bg-green-300":"bg-white"}`}>
-              <div className="font-black">{m.label}</div>
-              <div className="text-xs flex items-center justify-center gap-1">{m.done?<Check size={14}/> : null} {m.done?"erreicht":"offen"}</div>
-            </button>
-          </HoverCard>
-        ))}</div></section>
-        <section><div className="font-extrabold mb-2">Netz-Ziele</div><div className="grid grid-cols-1 sm:grid-cols-2 gap-2">{[
-          { label: "100% S-Bahnhöfe", stat: S, type:"S" },
-          { label: "100% U-Bahnhöfe", stat: U, type:"U" },
-          { label: "100% Regionalbahnhöfe", stat: R, type:"R" },
-        ].map(({label, stat, type}) => { const done = stat.visited >= stat.total && stat.total > 0; const pct = stat.total ? Math.round((stat.visited/stat.total)*100) : 0; const dates = stations.filter(s=>s.types.includes(type) && s.visits[0]?.date).map(s=>s.visits[0].date).sort(); const date = done ? dates[stat.total-1] : null; const info = done ? `${label} - erreicht am: ${formatDate(date)}` : `${stat.visited}/${stat.total} Bahnhöfe (${pct}%)`; return (
-          <HoverCard key={label} info={info}>
-            <button type="button" className={`w-full rounded-xl border-4 border-black p-2 text-center ${done?"bg-green-300":"bg-white"}`}>
-              <div className="font-black">{label}</div>
-              <div className="text-xs flex items-center justify-center gap-1">{done?<Check size={14}/> :null} {done?"erreicht":`${stat.visited}/${stat.total} (${pct}%)`}</div>
-            </button>
-          </HoverCard>
-        ); })}</div></section>
-        <section><div className="font-extrabold mb-2">Linien</div><div className="grid grid-cols-1 sm:grid-cols-2 gap-2">{Object.entries(lineIndex).map(([line,stat])=>{ const done=stat.visited>=stat.total&&stat.total>0; const pct=Math.round((stat.visited/stat.total)*100); const visitedStations=stations.filter(s=> (s.lines||[]).includes(line) && s.visits.length>0); const visitedNames=visitedStations.map(s=>s.name); const dates=visitedStations.map(s=>s.visits[0]?.date).filter(Boolean).sort(); const date=done?dates[stat.total-1]:null; const info=visitedNames.length ? (done ? `Alle Bahnhöfe besucht${date ? ` am ${formatDate(date)}` : ""}` : `Besuchte Bahnhöfe: ${visitedNames.join(", ")}`) : "Noch keine Bahnhöfe besucht"; return (
-          <HoverCard key={line} info={info}>
-            <button type="button" className={`w-full rounded-xl border-4 border-black p-2 ${done?"bg-green-200":"bg-white"}`}>
-              <div className="flex items-center gap-2 mb-1"><span className="px-2 py-0.5 text-xs font-black rounded-full border-2 border-black bg-white">{line}</span><div className="text-xs ml-auto">{stat.visited}/{stat.total} ({pct}%)</div></div>
-              <div className="w-full h-3 rounded-full border-2 border-black bg-white overflow-hidden">{pct>0 && (<div className="h-full bg-green-500" style={{width:`${pct}%`}}/> )}</div>
-            </button>
-          </HoverCard>
-        ); })}</div></section>
-      </div>
-    </Modal>
-  );
-}
-
-// Utils
-export function formatDate(iso){ if(!iso) return ""; try{ const d=new Date(iso+(iso.length===10?"T00:00:00":"")); return d.toLocaleDateString("de-DE",{year:"numeric",month:"2-digit",day:"2-digit"}); }catch{ return iso; } }
