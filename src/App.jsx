@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { Settings as SettingsIcon, Shuffle, MapPin, Camera, Upload, Download, Trash2, ArrowUpDown, Check, ChevronLeft, Trophy, Pencil, ImageUp, KeyRound, LogOut, ArrowUp, HelpCircle, Plus } from "lucide-react";
+import { Settings as SettingsIcon, Shuffle, MapPin, Camera, Upload, Download, Trash2, ArrowUpDown, Check, ChevronLeft, Trophy, Pencil, ImageUp, KeyRound, LogOut, ArrowUp, HelpCircle, Plus, X } from "lucide-react";
 import { fetchJourneyDuration } from "./journeys";
 import { seedStations } from "./seed_stations";
 import HeaderLogo from "./components/HeaderLogo";
@@ -253,6 +253,17 @@ export default function App(){
   function addVisit(stationId, visit/**:Visit*/){ updateStations(prev=>prev.map(s=> s.id===stationId ? {...s, visits:[...s.visits, visit]} : s)); setAddVisitFor(null); }
   function removeAllVisits(stationId){ updateStations(prev=>prev.map(s=> s.id===stationId ? {...s, visits:[]} : s)); }
   function attachPhotos(stationId, visitIndex, photos){ updateStations(prev=>prev.map(s=> s.id===stationId ? {...s, visits:s.visits.map((v,i)=> i===visitIndex?{...v, photos:[...(v.photos||[]), ...photos]}:v)} : s)); }
+  function removePhoto(stationId, visitIndex, photoIndex){
+    updateStations(prev => prev.map(s => s.id===stationId
+      ? {
+          ...s,
+          visits: s.visits.map((v,i)=> i===visitIndex
+            ? { ...v, photos: (v.photos || []).filter((_,idx)=> idx!==photoIndex) }
+            : v)
+        }
+      : s
+    ));
+  }
 
   // NEW: Notiz aktualisieren (inline Edit)
   function updateVisitNote(stationId, visitIndex, note){
@@ -399,7 +410,15 @@ export default function App(){
         )}
 
         {page==='visited' && (
-          <VisitedPage stations={stations} onBack={()=>setPage('home')} onAddVisit={addVisit} onClearVisits={removeAllVisits} onAttachPhotos={attachPhotos} onUpdateNote={updateVisitNote} />
+          <VisitedPage
+            stations={stations}
+            onBack={()=>setPage('home')}
+            onAddVisit={addVisit}
+            onClearVisits={removeAllVisits}
+            onAttachPhotos={attachPhotos}
+            onUpdateNote={updateVisitNote}
+            onDeletePhoto={removePhoto}
+          />
         )}
 
         {page==='stations' && (
@@ -639,7 +658,8 @@ function StationsPage({ stations, onBack, onAddVisit }){
 }
 
 // Visited Page
-function VisitedPage({ stations, onBack, onAddVisit, onClearVisits, onAttachPhotos, onUpdateNote }){
+function VisitedPage({ stations, onBack, onAddVisit, onClearVisits, onAttachPhotos, onUpdateNote, onDeletePhoto }){
+  const { t } = useI18n();
   const sortModes = ['visitDate','name','createdAt'];
   const sortLabels = {
     visitDate: 'Besuchsdatum ↓',
@@ -659,6 +679,7 @@ function VisitedPage({ stations, onBack, onAddVisit, onClearVisits, onAttachPhot
   const [pendingPhoto, setPendingPhoto] = useState(null); // {stationId, index}
   const [manualOpen, setManualOpen] = useState(false);
   const [editing, setEditing] = useState(null); // {stationId, index, text}
+  const [delPhoto, setDelPhoto] = useState(null); // {stationId, visitIndex, photoIndex}
 
   const latestISO = (st)=> st.visits.length ? (st.visits[st.visits.length-1].date||'') : '';
   const visited = useMemo(()=> stations.filter(s=> s.visits.length>0), [stations]);
@@ -750,13 +771,22 @@ function VisitedPage({ stations, onBack, onAddVisit, onClearVisits, onAttachPhot
 
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                       {(v.photos || []).map((p,pidx)=> (
-                        <button
-                          key={pidx}
-                          className="w-full h-64 rounded-xl overflow-hidden bg-white"
-                          onClick={()=>setZoom({src:p, station:st.name, date:v.date})}
-                        >
-                          <img src={p} alt="Foto" className="w-full h-full object-contain"/>
-                        </button>
+                        <div key={pidx} className="relative">
+                          <button
+                            className="w-full h-64 rounded-xl overflow-hidden bg-white"
+                            onClick={()=>setZoom({src:p, station:st.name, date:v.date})}
+                          >
+                            <img src={p} alt="Foto" className="w-full h-full object-contain"/>
+                          </button>
+                          <button
+                            type="button"
+                            title={t('deletePhoto.title')}
+                            className="absolute top-1 right-1 p-1 rounded-full bg-red-600 text-white"
+                            onClick={()=>setDelPhoto({stationId:st.id, visitIndex:idx, photoIndex:pidx})}
+                          >
+                            <X size={14}/>
+                          </button>
+                        </div>
                       ))}
                       <button
                         className="w-full aspect-square rounded-xl border-2 border-dashed flex items-center justify-center bg-white shadow-none active:shadow-none active:translate-y-0"
@@ -778,6 +808,21 @@ function VisitedPage({ stations, onBack, onAddVisit, onClearVisits, onAttachPhot
         <div className="space-y-3">
           <p className="text-sm">Diesen Bahnhof als <b>unbesucht</b> markieren? Alle Besuchseinträge werden entfernt.</p>
           <div className="flex gap-2 justify-end"><button onClick={()=>setConfirmId(null)} className="px-4 py-2 rounded-lg bg-white">Abbrechen</button><button onClick={()=>{ onClearVisits(confirmId); setConfirmId(null); }} className="px-4 py-2 rounded-lg bg-red-600 text-white">Löschen</button></div>
+        </div>
+      </Modal>
+
+      <Modal open={!!delPhoto} onClose={()=>setDelPhoto(null)} title={t('deletePhoto.title')}>
+        <div className="space-y-3">
+          <p className="text-sm">{t('deletePhoto.confirm')}</p>
+          <div className="flex gap-2 justify-end">
+            <button onClick={()=>setDelPhoto(null)} className="px-4 py-2 rounded-lg bg-white">{t('deletePhoto.cancel')}</button>
+            <button
+              onClick={()=>{ onDeletePhoto(delPhoto.stationId, delPhoto.visitIndex, delPhoto.photoIndex); setDelPhoto(null); }}
+              className="px-4 py-2 rounded-lg bg-red-600 text-white"
+            >
+              {t('deletePhoto.delete')}
+            </button>
+          </div>
         </div>
       </Modal>
 
