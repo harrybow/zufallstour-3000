@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { formatDate, googleMapsUrl, pickThreeUnvisited, rollAllowed, makeDataUrl, stationLabel } from '../src/App.jsx';
+import { googleMapsUrl, pickThreeUnvisited, rollAllowed, makeDataUrl, stationLabel } from '../src/App.jsx';
+import { formatDate } from '../src/formatDate.js';
 
 describe('utility functions', () => {
   it('formats ISO dates in de-DE format', () => {
