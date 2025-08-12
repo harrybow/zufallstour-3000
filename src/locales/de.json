@@ -3,6 +3,8 @@
   "nav.visited": "Besuchte Bahnhöfe",
   "nav.allStations": "Alle Bahnhöfe",
   "nav.settings": "Einstellungen",
+  "nav.help": "Hilfe",
+  "help.title": "Hilfe",
   "home.noRoll": "Noch nichts ausgewürfelt … drück auf {{roll}}! ✨",
   "roll": "WÜRFELN",
   "settings.title": "Einstellungen",

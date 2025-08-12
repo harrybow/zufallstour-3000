@@ -3,6 +3,8 @@
   "nav.visited": "Visited Stations",
   "nav.allStations": "All Stations",
   "nav.settings": "Settings",
+  "nav.help": "Help",
+  "help.title": "Help",
   "home.noRoll": "Nothing rolled yet… press {{roll}}! ✨",
   "roll": "ROLL",
   "settings.title": "Settings",
