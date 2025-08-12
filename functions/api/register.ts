@@ -1,6 +1,6 @@
-import { getDb, saveDb, parseBody, hashPassword } from '../_utils.js';
+import { getDb, saveDb, parseBody, hashPassword } from '../_utils';
 
-export const onRequestPost = async ({ request, env }) => {
+export const onRequestPost = async ({ request, env }: { request: Request; env: any }): Promise<Response> => {
   const { username, password } = await parseBody(request);
   if (!username || !password) {
     return new Response(JSON.stringify({ error: 'missing' }), { status: 400 });
