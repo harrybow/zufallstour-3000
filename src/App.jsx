@@ -576,37 +576,69 @@ function StationRow({ st, origin, onAddVisit, onUnvisit }){
 // Stations Page
 function StationsPage({ stations, onBack, onAddVisit }){
   const { t } = useI18n();
-  const [typeFilter, setTypeFilter] = useState({ S:true, U:true, R:true });
+  const [typeFilter, setTypeFilter] = useState({ S: true, U: true, R: true });
   const [onlyUnvisited, setOnlyUnvisited] = useState(false);
-  const [sortOldest, setSortOldest] = useState(false);
+  const sortModes = ['visitDate', 'name', 'createdAt'];
+  const sortLabels = {
+    visitDate: 'Besuchsdatum ↓',
+    name: 'Name ↓',
+    createdAt: 'Eintragsdatum ↓',
+  };
+  const [sortKey, setSortKey] = useState('name');
+  const cycleSortKey = () => {
+    setSortKey(prev => {
+      const idx = sortModes.indexOf(prev);
+      return sortModes[(idx + 1) % sortModes.length];
+    });
+  };
 
-  const toggleType = (t) => setTypeFilter(f => ({ ...f, [t]: !f[t] }));
+  const toggleType = t => setTypeFilter(f => ({ ...f, [t]: !f[t] }));
 
-  const filtered = useMemo(() => stations.filter(st => {
-    if (onlyUnvisited && st.visits.length > 0) return false;
-    if (!st.types.some(t => typeFilter[t])) return false;
-    return true;
-  }), [stations, typeFilter, onlyUnvisited]);
+  const filtered = useMemo(
+    () =>
+      stations.filter(st => {
+        if (onlyUnvisited && st.visits.length > 0) return false;
+        if (!st.types.some(t => typeFilter[t])) return false;
+        return true;
+      }),
+    [stations, typeFilter, onlyUnvisited],
+  );
 
   const sorted = useMemo(() => {
     const arr = [...filtered];
-    if (sortOldest) {
-      arr.sort((a,b)=>{
-        const aDate = a.visits.length ? a.visits[a.visits.length-1].date : '9999-99-99';
-        const bDate = b.visits.length ? b.visits[b.visits.length-1].date : '9999-99-99';
-        return aDate.localeCompare(bDate);
-      });
-    } else {
-      arr.sort((a,b)=>a.name.localeCompare(b.name));
+    switch (sortKey) {
+      case 'visitDate':
+        arr.sort((a, b) => {
+          const aDate = a.visits.length ? a.visits[a.visits.length - 1].date : '';
+          const bDate = b.visits.length ? b.visits[b.visits.length - 1].date : '';
+          return bDate.localeCompare(aDate);
+        });
+        break;
+      case 'createdAt':
+        arr.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+        break;
+      default:
+        arr.sort((a, b) => a.name.localeCompare(b.name));
     }
     return arr;
-  }, [filtered, sortOldest]);
+  }, [filtered, sortKey]);
 
   return (
     <div className="rounded-[28px] border-4 border-black shadow-[10px_10px_0_0_rgba(0,0,0,0.6)] bg-gradient-to-br from-teal-300 via-rose-200 to-amber-200 p-4 sm:p-6 mb-4">
       <div className="flex items-center gap-2 mb-4">
         <button onClick={onBack} className="px-3 py-2 rounded-full border-4 border-black bg-white flex items-center gap-2"><ChevronLeft size={18}/> Zurück</button>
         <div className="font-extrabold text-lg">Alle Bahnhöfe</div>
+        <div className="ml-auto flex items-center gap-2 text-sm">
+          <div>{sortLabels[sortKey]}</div>
+          <button
+            onClick={cycleSortKey}
+            className="p-1 rounded-lg bg-white"
+            title="Sortierung ändern"
+            type="button"
+          >
+            <ArrowUpDown size={16}/>
+          </button>
+        </div>
       </div>
 
       <div className="flex flex-wrap gap-2 mb-4 text-sm">
@@ -621,10 +653,6 @@ function StationsPage({ stations, onBack, onAddVisit }){
           onClick={()=>setOnlyUnvisited(v=>!v)}
           className={`px-3 py-1 rounded-full ${onlyUnvisited?"bg-black text-white":"bg-white"}`}
         >Noch nie besucht</button>
-        <button
-          onClick={()=>setSortOldest(s=>!s)}
-          className={`px-3 py-1 rounded-full ${sortOldest?"bg-black text-white":"bg-white"}`}
-        >Am längsten her</button>
       </div>
 
       <div className="space-y-2 pr-1">
@@ -660,19 +688,19 @@ function StationsPage({ stations, onBack, onAddVisit }){
 // Visited Page
 function VisitedPage({ stations, onBack, onAddVisit, onClearVisits, onAttachPhotos, onUpdateNote, onDeletePhoto }){
   const { t } = useI18n();
-  const sortModes = ['visitDate','name','createdAt'];
+  const sortModes = useMemo(() => ['visitDate','name','createdAt'], []);
   const sortLabels = {
     visitDate: 'Besuchsdatum ↓',
     name: 'Name ↓',
     createdAt: 'Eintragsdatum ↓'
   };
   const [sortKey, setSortKey] = useState('visitDate');
-  const cycleSortKey = () => {
+  const cycleSortKey = useCallback(() => {
     setSortKey(prev => {
       const idx = sortModes.indexOf(prev);
       return sortModes[(idx + 1) % sortModes.length];
     });
-  };
+  }, [sortModes]);
   const [confirmId, setConfirmId] = useState(null);
   const [zoom, setZoom] = useState(null); // {src, station, date}
   const fileRef = useRef(null);
