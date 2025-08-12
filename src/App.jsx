@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { Settings as SettingsIcon, Shuffle, MapPin, Camera, Upload, Download, Trash2, ArrowUpDown, Check, ChevronLeft, Trophy, Pencil, ImageUp, KeyRound, LogOut, ArrowUp } from "lucide-react";
+import { Settings as SettingsIcon, Shuffle, MapPin, Camera, Upload, Download, Trash2, ArrowUpDown, Check, ChevronLeft, Trophy, Pencil, ImageUp, KeyRound, LogOut, ArrowUp, Plus } from "lucide-react";
 import { fetchJourneyDuration } from "./journeys";
 import { seedStations } from "./seed_stations";
 import HeaderLogo from "./components/HeaderLogo";
@@ -398,7 +398,7 @@ export default function App(){
         )}
 
         {page==='stations' && (
-          <StationsPage stations={stations} onBack={()=>setPage('home')} />
+          <StationsPage stations={stations} onBack={()=>setPage('home')} onAddVisit={st=>setAddVisitFor(st)} />
         )}
 
         <Modal open={showSettings} onClose={()=>setShowSettings(false)} title={t('settings.title')}>
@@ -547,7 +547,8 @@ function StationRow({ st, origin, onAddVisit, onUnvisit }){
 }
 
 // Stations Page
-function StationsPage({ stations, onBack }){
+function StationsPage({ stations, onBack, onAddVisit }){
+  const { t } = useI18n();
   const [typeFilter, setTypeFilter] = useState({ S:true, U:true, R:true });
   const [onlyUnvisited, setOnlyUnvisited] = useState(false);
   const [sortOldest, setSortOldest] = useState(false);
@@ -604,8 +605,19 @@ function StationsPage({ stations, onBack }){
         {sorted.map(st => (
           <div
             key={st.id}
-            className={`p-2 border-4 border-black rounded-lg ${st.visits.length ? 'bg-[#8c4bd6] text-white' : 'bg-white'}`}
+            className={`relative p-2 border-4 border-black rounded-lg ${st.visits.length ? 'bg-[#8c4bd6] text-white' : 'bg-white'}`}
           >
+            {st.visits.length===0 && (
+              <button
+                type="button"
+                onClick={() => onAddVisit?.(st)}
+                className="absolute -top-3 -right-3 w-10 h-10 rounded-full border-4 border-black bg-amber-300 flex items-center justify-center text-black"
+                aria-label={t('station.addVisit')}
+                title={t('station.addVisit')}
+              >
+                <Plus size={24}/>
+              </button>
+            )}
             <div className="font-bold truncate">{st.name}</div>
             <LineChips lines={st.lines} types={st.types} />
             <div className="text-xs mt-1">
