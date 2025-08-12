@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { onRequestPost as register } from '../functions/api/register.js';
-import { onRequestPost as login } from '../functions/api/login.js';
-import { onRequestPost as password } from '../functions/api/password.js';
+import { onRequestPost as register } from '../functions/api/register';
+import { onRequestPost as login } from '../functions/api/login';
+import { onRequestPost as password } from '../functions/api/password';
 
 function makeEnv(){
   const store = {};

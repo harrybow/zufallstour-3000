@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { onRequestPost as register } from '../functions/api/register.js';
-import { onRequestPost as login } from '../functions/api/login.js';
-import { onRequestPost as dataPost } from '../functions/api/data.js';
-import { onRequestGet as profileGet } from '../functions/api/profile/[username].js';
+import { onRequestPost as register } from '../functions/api/register';
+import { onRequestPost as login } from '../functions/api/login';
+import { onRequestPost as dataPost } from '../functions/api/data';
+import { onRequestGet as profileGet } from '../functions/api/profile/[username]';
 
 function makeEnv(){
   const store = {};

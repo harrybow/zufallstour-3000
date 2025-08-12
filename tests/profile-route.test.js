@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import worker from '../src/worker.js';
+import worker from '../src/worker';
 
 function makeEnv(status = 301) {
   return {

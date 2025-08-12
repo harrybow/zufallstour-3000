@@ -2,7 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.jsx'
-import Profile from './Profile.jsx'
+import Profile from './Profile'
 import { I18nProvider } from './i18n.jsx'
 
 // Detect direct profile links (with optional trailing slash)
