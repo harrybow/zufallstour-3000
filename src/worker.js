@@ -35,6 +35,10 @@ export default {
     if (profileMatch && request.method === 'GET') {
       return profileGet(request, env, decodeURIComponent(profileMatch[1]));
     }
-    return env.ASSETS.fetch(request);
+    const asset = await env.ASSETS.fetch(request);
+    if (asset.status === 404 && request.method === 'GET' && !pathname.startsWith('/api/')) {
+      return env.ASSETS.fetch(new Request(`${url.origin}/index.html`, request));
+    }
+    return asset;
   }
 };
