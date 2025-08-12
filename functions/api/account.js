@@ -1,4 +1,4 @@
-import { getDb, saveDb, auth } from '../_utils.js';
+import { getDb, saveDb, auth } from '../../src/utils.js';
 
 export const onRequestDelete = async ({ request, env }) => {
   const db = await getDb(env);
