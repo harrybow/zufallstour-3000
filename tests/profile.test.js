@@ -49,4 +49,11 @@ describe('profile endpoint', () => {
     expect(body.username).toBe('bob');
     expect(body.data).toEqual(sampleData);
   });
+
+  it('returns 404 for an unknown username', async () => {
+    const res = await profileGet({ env, params: { username: 'alice' } });
+    expect(res.status).toBe(404);
+    const body = await res.json();
+    expect(body.error).toBe('notfound');
+  });
 });

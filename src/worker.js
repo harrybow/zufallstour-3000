@@ -36,7 +36,11 @@ export default {
       return profileGet(request, env, decodeURIComponent(profileMatch[1]));
     }
     const asset = await env.ASSETS.fetch(request);
-    if (asset.status === 404 && request.method === 'GET' && !pathname.startsWith('/api/')) {
+    if (
+      request.method === 'GET' &&
+      !pathname.startsWith('/api/') &&
+      (asset.status === 404 || (asset.status >= 300 && asset.status < 400))
+    ) {
       return env.ASSETS.fetch(new Request(`${url.origin}/index.html`, request));
     }
     return asset;
