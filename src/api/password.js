@@ -1,8 +1,7 @@
-import { getDb, saveDb, parseBody, auth, hashPassword, verifyPassword } from '../utils.js';
+import { parseBody, auth, hashPassword, verifyPassword, getUser, saveUser } from '../utils.js';
 
 export async function password(request, env) {
-  const db = await getDb(env);
-  const user = auth(request, db);
+  const user = await auth(request, env);
   if (!user) {
     return new Response(JSON.stringify({ error: 'noauth' }), { status: 401 });
   }
@@ -10,11 +9,11 @@ export async function password(request, env) {
   if (!oldPassword || !newPassword) {
     return new Response(JSON.stringify({ error: 'missing' }), { status: 400 });
   }
-  const u = db.users.find(u => u.id === user.id);
+  const u = await getUser(env, user.id);
   if (!u || !(await verifyPassword(oldPassword, u.password))) {
     return new Response(JSON.stringify({ error: 'invalid' }), { status: 400 });
   }
   u.password = await hashPassword(newPassword);
-  await saveDb(env, db);
+  await saveUser(env, u);
   return Response.json({ success: true });
 }

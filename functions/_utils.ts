@@ -1,16 +1,56 @@
-interface Database {
-  users: Array<{ id: number; username: string; password: string }>
-  data: Record<string, unknown>
-  sessions: Record<string, number>
+export interface User {
+  id: string;
+  username: string;
+  password: string;
 }
 
-export async function getDb(env: any): Promise<Database>{
-  const data = await env.DB.get('db');
-  return data ? JSON.parse(data) : { users: [], data: {}, sessions: {} };
+export async function getUser(env: any, id: string): Promise<User | null>{
+  const data = await env.DB.get(`user:${id}`);
+  return data ? JSON.parse(data) as User : null;
 }
 
-export async function saveDb(env: any, db: Database): Promise<void>{
-  await env.DB.put('db', JSON.stringify(db));
+export async function getUserByUsername(env: any, username: string): Promise<User | null>{
+  const id = await env.DB.get(`username:${username}`);
+  return id ? await getUser(env, id) : null;
+}
+
+export async function saveUser(env: any, user: User): Promise<void>{
+  await env.DB.put(`user:${user.id}`, JSON.stringify(user));
+  await env.DB.put(`username:${user.username}`, user.id);
+}
+
+export async function deleteUser(env: any, user: User): Promise<void>{
+  await env.DB.delete(`user:${user.id}`);
+  await env.DB.delete(`username:${user.username}`);
+}
+
+export async function getStations(env: any, userId: string): Promise<any>{
+  const data = await env.DB.get(`data:${userId}`);
+  return data ? JSON.parse(data) : null;
+}
+
+export async function saveStations(env: any, userId: string, stations: any): Promise<void>{
+  await env.DB.put(`data:${userId}`, JSON.stringify(stations));
+}
+
+export async function deleteStations(env: any, userId: string): Promise<void>{
+  await env.DB.delete(`data:${userId}`);
+}
+
+export async function saveSession(env: any, token: string, userId: string): Promise<void>{
+  await env.DB.put(`session:${token}`, String(userId));
+}
+
+export async function deleteSession(env: any, token: string): Promise<void>{
+  await env.DB.delete(`session:${token}`);
+}
+
+export async function deleteSessionsForUser(env: any, userId: string): Promise<void>{
+  const list = await env.DB.list({ prefix: 'session:' });
+  await Promise.all(list.keys.map(async k => {
+    const uid = await env.DB.get(k.name);
+    if (uid === String(userId)) await env.DB.delete(k.name);
+  }));
 }
 
 export async function parseBody(request: Request): Promise<any>{
@@ -38,11 +78,11 @@ export async function verifyPassword(password: string, stored: string): Promise<
   return hashHex === computed;
 }
 
-export function auth(request: Request, db: Database): { id: number } | null{
+export async function auth(request: Request, env: any): Promise<{ id: string } | null>{
   const authHeader = request.headers.get('authorization');
   if (!authHeader) return null;
   const token = authHeader.split(' ')[1];
-  const uid = db.sessions[token];
+  const uid = await env.DB.get(`session:${token}`);
   return uid ? { id: uid } : null;
 }
 

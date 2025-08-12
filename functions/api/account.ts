@@ -1,16 +1,15 @@
-import { getDb, saveDb, auth } from '../_utils';
+import { auth, getUser, deleteUser, deleteStations, deleteSessionsForUser } from '../_utils';
 
 export const onRequestDelete = async ({ request, env }: { request: Request; env: any }): Promise<Response> => {
-  const db = await getDb(env);
-  const user = auth(request, db);
+  const user = await auth(request, env);
   if (!user) {
     return new Response(JSON.stringify({ error: 'noauth' }), { status: 401 });
   }
-  db.users = db.users.filter(u => u.id !== user.id);
-  delete db.data[user.id];
-  for (const [t, uid] of Object.entries(db.sessions)) {
-    if (uid === user.id) delete db.sessions[t];
+  const existing = await getUser(env, user.id);
+  if (existing) {
+    await deleteUser(env, existing);
+    await deleteStations(env, user.id);
+    await deleteSessionsForUser(env, user.id);
   }
-  await saveDb(env, db);
   return Response.json({ success: true });
 };

@@ -1,10 +1,10 @@
-import { getDb } from '../../_utils';
+import { getUserByUsername, getStations } from '../../_utils';
 
 export const onRequestGet = async ({ env, params }: { env: any; params: { username: string } }): Promise<Response> => {
-  const db = await getDb(env);
-  const user = db.users.find(u => u.username === params.username);
+  const user = await getUserByUsername(env, params.username);
   if (!user) {
     return new Response(JSON.stringify({ error: 'notfound' }), { status: 404 });
   }
-  return Response.json({ username: user.username, data: db.data[user.id] || null });
+  const data = await getStations(env, user.id);
+  return Response.json({ username: user.username, data: data || null });
 };
