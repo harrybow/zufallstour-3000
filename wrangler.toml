@@ -2,11 +2,8 @@ name = "zufallstour-3000"
 main = "src/worker.js"
 compatibility_date = "2024-05-01"
 
-[build]
-command = "npm run build"
-
 [assets]
-directory = "./dist"
+directory = "dist"
 binding = "ASSETS"
 
 [[kv_namespaces]]
