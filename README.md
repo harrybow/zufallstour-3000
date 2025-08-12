@@ -24,5 +24,5 @@ This project now runs entirely on a single **Cloudflare Worker**. The Worker ser
 2. Deploy the Worker and assets:
 
    ```bash
-   npx wrangler deploy
+   npm run deploy
    ```

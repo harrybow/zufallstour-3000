@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { Settings as SettingsIcon, Shuffle, MapPin, Camera, Upload, Download, Trash2, ArrowUpDown, Check, ChevronLeft, Trophy, Pencil, ImageUp, KeyRound, LogOut, ArrowUp, HelpCircle, Plus } from "lucide-react";
+import { Settings as SettingsIcon, Shuffle, MapPin, Camera, Upload, Download, Trash2, ArrowUpDown, Check, ChevronLeft, Trophy, Pencil, ImageUp, KeyRound, LogOut, ArrowUp, HelpCircle, Plus, X } from "lucide-react";
 import { fetchJourneyDuration } from "./journeys";
 import { seedStations } from "./seed_stations";
 import HeaderLogo from "./components/HeaderLogo";
@@ -253,6 +253,17 @@ export default function App(){
   function addVisit(stationId, visit/**:Visit*/){ updateStations(prev=>prev.map(s=> s.id===stationId ? {...s, visits:[...s.visits, visit]} : s)); setAddVisitFor(null); }
   function removeAllVisits(stationId){ updateStations(prev=>prev.map(s=> s.id===stationId ? {...s, visits:[]} : s)); }
   function attachPhotos(stationId, visitIndex, photos){ updateStations(prev=>prev.map(s=> s.id===stationId ? {...s, visits:s.visits.map((v,i)=> i===visitIndex?{...v, photos:[...(v.photos||[]), ...photos]}:v)} : s)); }
+  function removePhoto(stationId, visitIndex, photoIndex){
+    updateStations(prev => prev.map(s => s.id===stationId
+      ? {
+          ...s,
+          visits: s.visits.map((v,i)=> i===visitIndex
+            ? { ...v, photos: (v.photos || []).filter((_,idx)=> idx!==photoIndex) }
+            : v)
+        }
+      : s
+    ));
+  }
 
   // NEW: Notiz aktualisieren (inline Edit)
   function updateVisitNote(stationId, visitIndex, note){
@@ -399,7 +410,15 @@ export default function App(){
         )}
 
         {page==='visited' && (
-          <VisitedPage stations={stations} onBack={()=>setPage('home')} onAddVisit={addVisit} onClearVisits={removeAllVisits} onAttachPhotos={attachPhotos} onUpdateNote={updateVisitNote} />
+          <VisitedPage
+            stations={stations}
+            onBack={()=>setPage('home')}
+            onAddVisit={addVisit}
+            onClearVisits={removeAllVisits}
+            onAttachPhotos={attachPhotos}
+            onUpdateNote={updateVisitNote}
+            onDeletePhoto={removePhoto}
+          />
         )}
 
         {page==='stations' && (
@@ -451,7 +470,26 @@ export default function App(){
           </div>
           <div className="mt-4 rounded-2xl border-4 border-black p-4 bg-white/80">
             <h3 className="font-extrabold text-lg mb-2">{t('settings.account')}</h3>
-            {username && (<div className="mb-2 text-sm">{t('settings.account.loggedInAs')} <b>{username}</b></div>)}
+            {username && (
+              <>
+                <div className="mb-2 text-sm">{t('settings.account.loggedInAs')} <b>{username}</b></div>
+                <div className="mb-4">
+                  <label className="block text-sm font-bold mb-1">{t('settings.account.profileLink')}</label>
+                  <div className="flex gap-2 items-center">
+                    <input
+                      type="text"
+                      readOnly
+                      value={`${window.location.origin}/profile/${encodeURIComponent(username)}`}
+                      className="flex-1 px-3 py-2 rounded-lg border-4 border-black bg-white text-xs"
+                    />
+                    <button
+                      onClick={()=>navigator.clipboard.writeText(`${window.location.origin}/profile/${encodeURIComponent(username)}`)}
+                      className="px-3 py-2 rounded-lg border-4 border-black bg-blue-500 text-white text-xs font-bold"
+                    >{t('settings.account.copy')}</button>
+                  </div>
+                </div>
+              </>
+            )}
             <div className="flex flex-col sm:flex-row gap-2 w-full">
               <button
                 onClick={()=>setShowChangePassword(true)}
@@ -557,37 +595,69 @@ function StationRow({ st, origin, onAddVisit, onUnvisit }){
 // Stations Page
 function StationsPage({ stations, onBack, onAddVisit }){
   const { t } = useI18n();
-  const [typeFilter, setTypeFilter] = useState({ S:true, U:true, R:true });
+  const [typeFilter, setTypeFilter] = useState({ S: true, U: true, R: true });
   const [onlyUnvisited, setOnlyUnvisited] = useState(false);
-  const [sortOldest, setSortOldest] = useState(false);
+  const sortModes = ['visitDate', 'name', 'createdAt'];
+  const sortLabels = {
+    visitDate: 'Besuchsdatum ↓',
+    name: 'Name ↓',
+    createdAt: 'Eintragsdatum ↓',
+  };
+  const [sortKey, setSortKey] = useState('name');
+  const cycleSortKey = () => {
+    setSortKey(prev => {
+      const idx = sortModes.indexOf(prev);
+      return sortModes[(idx + 1) % sortModes.length];
+    });
+  };
 
-  const toggleType = (t) => setTypeFilter(f => ({ ...f, [t]: !f[t] }));
+  const toggleType = t => setTypeFilter(f => ({ ...f, [t]: !f[t] }));
 
-  const filtered = useMemo(() => stations.filter(st => {
-    if (onlyUnvisited && st.visits.length > 0) return false;
-    if (!st.types.some(t => typeFilter[t])) return false;
-    return true;
-  }), [stations, typeFilter, onlyUnvisited]);
+  const filtered = useMemo(
+    () =>
+      stations.filter(st => {
+        if (onlyUnvisited && st.visits.length > 0) return false;
+        if (!st.types.some(t => typeFilter[t])) return false;
+        return true;
+      }),
+    [stations, typeFilter, onlyUnvisited],
+  );
 
   const sorted = useMemo(() => {
     const arr = [...filtered];
-    if (sortOldest) {
-      arr.sort((a,b)=>{
-        const aDate = a.visits.length ? a.visits[a.visits.length-1].date : '9999-99-99';
-        const bDate = b.visits.length ? b.visits[b.visits.length-1].date : '9999-99-99';
-        return aDate.localeCompare(bDate);
-      });
-    } else {
-      arr.sort((a,b)=>a.name.localeCompare(b.name));
+    switch (sortKey) {
+      case 'visitDate':
+        arr.sort((a, b) => {
+          const aDate = a.visits.length ? a.visits[a.visits.length - 1].date : '';
+          const bDate = b.visits.length ? b.visits[b.visits.length - 1].date : '';
+          return bDate.localeCompare(aDate);
+        });
+        break;
+      case 'createdAt':
+        arr.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+        break;
+      default:
+        arr.sort((a, b) => a.name.localeCompare(b.name));
     }
     return arr;
-  }, [filtered, sortOldest]);
+  }, [filtered, sortKey]);
 
   return (
     <div className="rounded-[28px] border-4 border-black shadow-[10px_10px_0_0_rgba(0,0,0,0.6)] bg-gradient-to-br from-teal-300 via-rose-200 to-amber-200 p-4 sm:p-6 mb-4">
       <div className="flex items-center gap-2 mb-4">
         <button onClick={onBack} className="px-3 py-2 rounded-full border-4 border-black bg-white flex items-center gap-2"><ChevronLeft size={18}/> Zurück</button>
         <div className="font-extrabold text-lg">Alle Bahnhöfe</div>
+        <div className="ml-auto flex items-center gap-2 text-sm">
+          <div>{sortLabels[sortKey]}</div>
+          <button
+            onClick={cycleSortKey}
+            className="p-1 rounded-lg bg-white"
+            title="Sortierung ändern"
+            type="button"
+          >
+            <ArrowUpDown size={16}/>
+          </button>
+        </div>
       </div>
 
       <div className="flex flex-wrap gap-2 mb-4 text-sm">
@@ -602,10 +672,6 @@ function StationsPage({ stations, onBack, onAddVisit }){
           onClick={()=>setOnlyUnvisited(v=>!v)}
           className={`px-3 py-1 rounded-full ${onlyUnvisited?"bg-black text-white":"bg-white"}`}
         >Noch nie besucht</button>
-        <button
-          onClick={()=>setSortOldest(s=>!s)}
-          className={`px-3 py-1 rounded-full ${sortOldest?"bg-black text-white":"bg-white"}`}
-        >Am längsten her</button>
       </div>
 
       <div className="space-y-2 pr-1">
@@ -639,26 +705,28 @@ function StationsPage({ stations, onBack, onAddVisit }){
 }
 
 // Visited Page
-function VisitedPage({ stations, onBack, onAddVisit, onClearVisits, onAttachPhotos, onUpdateNote }){
-  const sortModes = ['visitDate','name','createdAt'];
+function VisitedPage({ stations, onBack, onAddVisit, onClearVisits, onAttachPhotos, onUpdateNote, onDeletePhoto }){
+  const { t } = useI18n();
+  const sortModes = useMemo(() => ['visitDate','name','createdAt'], []);
   const sortLabels = {
     visitDate: 'Besuchsdatum ↓',
     name: 'Name ↓',
     createdAt: 'Eintragsdatum ↓'
   };
   const [sortKey, setSortKey] = useState('visitDate');
-  const cycleSortKey = () => {
+  const cycleSortKey = useCallback(() => {
     setSortKey(prev => {
       const idx = sortModes.indexOf(prev);
       return sortModes[(idx + 1) % sortModes.length];
     });
-  };
+  }, [sortModes]);
   const [confirmId, setConfirmId] = useState(null);
   const [zoom, setZoom] = useState(null); // {src, station, date}
   const fileRef = useRef(null);
   const [pendingPhoto, setPendingPhoto] = useState(null); // {stationId, index}
   const [manualOpen, setManualOpen] = useState(false);
   const [editing, setEditing] = useState(null); // {stationId, index, text}
+  const [delPhoto, setDelPhoto] = useState(null); // {stationId, visitIndex, photoIndex}
 
   const latestISO = (st)=> st.visits.length ? (st.visits[st.visits.length-1].date||'') : '';
   const visited = useMemo(()=> stations.filter(s=> s.visits.length>0), [stations]);
@@ -750,13 +818,22 @@ function VisitedPage({ stations, onBack, onAddVisit, onClearVisits, onAttachPhot
 
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                       {(v.photos || []).map((p,pidx)=> (
-                        <button
-                          key={pidx}
-                          className="w-full h-64 rounded-xl overflow-hidden bg-white"
-                          onClick={()=>setZoom({src:p, station:st.name, date:v.date})}
-                        >
-                          <img src={p} alt="Foto" className="w-full h-full object-contain"/>
-                        </button>
+                        <div key={pidx} className="relative">
+                          <button
+                            className="w-full h-64 rounded-xl overflow-hidden bg-white"
+                            onClick={()=>setZoom({src:p, station:st.name, date:v.date})}
+                          >
+                            <img src={p} alt="Foto" className="w-full h-full object-contain"/>
+                          </button>
+                          <button
+                            type="button"
+                            title={t('deletePhoto.title')}
+                            className="absolute top-1 right-1 p-1 rounded-full bg-red-600 text-white"
+                            onClick={()=>setDelPhoto({stationId:st.id, visitIndex:idx, photoIndex:pidx})}
+                          >
+                            <X size={14}/>
+                          </button>
+                        </div>
                       ))}
                       <button
                         className="w-full aspect-square rounded-xl border-2 border-dashed flex items-center justify-center bg-white shadow-none active:shadow-none active:translate-y-0"
@@ -778,6 +855,21 @@ function VisitedPage({ stations, onBack, onAddVisit, onClearVisits, onAttachPhot
         <div className="space-y-3">
           <p className="text-sm">Diesen Bahnhof als <b>unbesucht</b> markieren? Alle Besuchseinträge werden entfernt.</p>
           <div className="flex gap-2 justify-end"><button onClick={()=>setConfirmId(null)} className="px-4 py-2 rounded-lg bg-white">Abbrechen</button><button onClick={()=>{ onClearVisits(confirmId); setConfirmId(null); }} className="px-4 py-2 rounded-lg bg-red-600 text-white">Löschen</button></div>
+        </div>
+      </Modal>
+
+      <Modal open={!!delPhoto} onClose={()=>setDelPhoto(null)} title={t('deletePhoto.title')}>
+        <div className="space-y-3">
+          <p className="text-sm">{t('deletePhoto.confirm')}</p>
+          <div className="flex gap-2 justify-end">
+            <button onClick={()=>setDelPhoto(null)} className="px-4 py-2 rounded-lg bg-white">{t('deletePhoto.cancel')}</button>
+            <button
+              onClick={()=>{ onDeletePhoto(delPhoto.stationId, delPhoto.visitIndex, delPhoto.photoIndex); setDelPhoto(null); }}
+              className="px-4 py-2 rounded-lg bg-red-600 text-white"
+            >
+              {t('deletePhoto.delete')}
+            </button>
+          </div>
         </div>
       </Modal>
 
