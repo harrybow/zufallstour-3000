@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { Settings as SettingsIcon, Shuffle, MapPin, Camera, Upload, Download, Trash2, ArrowUpDown, Check, ChevronLeft, Trophy, Pencil, ImageUp, KeyRound, LogOut, ArrowUp, Plus } from "lucide-react";
+import { Settings as SettingsIcon, Shuffle, MapPin, Camera, Upload, Download, Trash2, ArrowUpDown, Check, ChevronLeft, Trophy, Pencil, ImageUp, KeyRound, LogOut, ArrowUp, HelpCircle, Plus } from "lucide-react";
 import { fetchJourneyDuration } from "./journeys";
 import { seedStations } from "./seed_stations";
 import HeaderLogo from "./components/HeaderLogo";
@@ -13,6 +13,8 @@ import Login from "./Login";
 import { fetchData, saveData, logout as apiLogout, deleteAccount, changePassword } from "./api.js";
 import { useI18n } from "./i18n.jsx";
 import { fileToDataUrl } from "./imageUtils.js";
+import helpDe from "./help.de.html?raw";
+import helpEn from "./help.en.html?raw";
 
 // Helpers & Types
 const STORAGE_KEY = "zufallstour3000.v4";
@@ -98,6 +100,7 @@ export default function App(){
   const [page, setPage] = useState/** @type {"home"|"visited"|"stations"} */("home");
   const [rolled, setRolled] = useState/** @type {string[]} */([]);
   const [showSettings, setShowSettings] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
   const [addVisitFor, setAddVisitFor] = useState/** @type {Station|null} */(null);
   const [exportDialog, setExportDialog] = useState({open:false, href:"", filename:"", text:""});
   const [showDeleteAccount, setShowDeleteAccount] = useState(false);
@@ -109,6 +112,7 @@ export default function App(){
   const [cooldownEnabled, setCooldownEnabled] = useState(()=>{ try{ return JSON.parse(localStorage.getItem(COOLDOWN_KEY) ?? "true"); }catch{ return true; }});
   const [homeStation, setHomeStation] = useState(()=>{ try{ return localStorage.getItem(HOME_KEY) || ""; }catch{ return ""; }});
   const [showScrollTop, setShowScrollTop] = useState(false);
+  const helpHtml = lang === "de" ? helpDe : helpEn;
 
   const stationLabelFromName = (name) => {
     const n = normName(name);
@@ -378,6 +382,7 @@ export default function App(){
             </button>
             <button onClick={()=>setPage('visited')} className="w-full justify-center px-4 py-3 rounded-full font-bold bg-white text-black flex items-center gap-2 hover:brightness-110">{t('nav.visited')}</button>
             <button onClick={()=>setPage('stations')} className="w-full justify-center px-4 py-3 rounded-full font-bold bg-white text-black flex items-center gap-2 hover:brightness-110">{t('nav.allStations')}</button>
+            <button onClick={()=>setShowHelp(true)} className="w-full justify-center px-4 py-3 rounded-full font-bold bg-white text-black flex items-center gap-2 hover:brightness-110"><HelpCircle size={20}/> {t('nav.help')}</button>
             <button onClick={()=>setShowSettings(true)} className="w-full justify-center px-4 py-3 rounded-full font-bold bg-black text-white flex items-center" aria-label={t('nav.settings')} title={t('nav.settings')}><SettingsIcon size={20}/></button>
           </div>
 
@@ -401,6 +406,9 @@ export default function App(){
           <StationsPage stations={stations} onBack={()=>setPage('home')} onAddVisit={st=>setAddVisitFor(st)} />
         )}
 
+        <Modal open={showHelp} onClose={()=>setShowHelp(false)} title={t('help.title')}>
+          <div className="text-sm" dangerouslySetInnerHTML={{__html: helpHtml}} />
+        </Modal>
         <Modal open={showSettings} onClose={()=>setShowSettings(false)} title={t('settings.title')}>
           <div className="rounded-2xl border-4 border-black p-4 bg-white/80">
             <h3 className="font-extrabold text-lg mb-2">{t('settings.language')}</h3>
