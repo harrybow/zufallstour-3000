@@ -188,6 +188,7 @@ export default function App(){
     return stats;
   }, [stations]);
   const photoCount = useMemo(()=> stations.reduce((acc,s)=> acc + s.visits.reduce((sum,v)=> sum + (v.photos?.length||0),0),0), [stations]);
+  const profileUrl = useMemo(() => username ? `${window.location.origin}/profile/${encodeURIComponent(username)}` : '', [username]);
 
   function handleLogin(tok, user){
     try { localStorage.removeItem(STORAGE_KEY); } catch { /* ignore */ }
@@ -479,11 +480,11 @@ export default function App(){
                     <input
                       type="text"
                       readOnly
-                      value={`${window.location.origin}/profile/${encodeURIComponent(username)}`}
+                      value={profileUrl}
                       className="flex-1 px-3 py-2 rounded-lg border-4 border-black bg-white text-xs"
                     />
                     <button
-                      onClick={()=>navigator.clipboard.writeText(`${window.location.origin}/profile/${encodeURIComponent(username)}`)}
+                      onClick={()=>navigator.clipboard.writeText(profileUrl)}
                       className="px-3 py-2 rounded-lg border-4 border-black bg-blue-500 text-white text-xs font-bold"
                     >{t('settings.account.copy')}</button>
                   </div>
