@@ -4,6 +4,7 @@ import { logout } from './api/logout.js';
 import { password } from './api/password.js';
 import { accountDelete } from './api/account.js';
 import { dataGet, dataPost } from './api/data.js';
+import { profileGet } from './api/profile.js';
 
 export default {
   async fetch(request, env) {
@@ -29,6 +30,10 @@ export default {
     }
     if (pathname === '/api/data' && request.method === 'POST') {
       return dataPost(request, env);
+    }
+    const profileMatch = pathname.match(/^\/api\/profile\/(.+)$/);
+    if (profileMatch && request.method === 'GET') {
+      return profileGet(request, env, decodeURIComponent(profileMatch[1]));
     }
     return env.ASSETS.fetch(request);
   }
