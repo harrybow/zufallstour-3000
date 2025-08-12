@@ -1,4 +1,4 @@
-import { getDb } from '../../../src/utils.js';
+import { getDb } from '../../_utils.js';
 
 export const onRequestGet = async ({ env, params }) => {
   const db = await getDb(env);
