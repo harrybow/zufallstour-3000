@@ -9,14 +9,13 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest run",
-    "deploy": "wrangler deploy --config wrangler.toml --env production",
-    "deploy:preview": "wrangler deploy --config wrangler.toml --env preview"
+    "deploy": "npx wrangler deploy --config wrangler.toml --env production",
+    "deploy:preview": "npx wrangler deploy --config wrangler.toml --env preview"
   },
   "dependencies": {
     "lucide-react": "^0.539.0",
     "react": "^19.1.1",
-    "react-dom": "^19.1.1",
-    "wrangler": "^4.28.1"
+    "react-dom": "^19.1.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.32.0",
