@@ -1,3 +1,5 @@
+/* eslint-env node */
+/* global Buffer, process */
 import fs from 'fs/promises';
 import path from 'path';
 

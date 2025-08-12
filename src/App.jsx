@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { Settings as SettingsIcon, Shuffle, MapPin, Camera, Upload, Download, Trash2, ArrowUpDown, Check, ChevronLeft, Trophy, Pencil, ImageUp, KeyRound, LogOut } from "lucide-react";
+import { Settings as SettingsIcon, Shuffle, MapPin, Camera, Upload, Download, Trash2, ArrowUpDown, Check, ChevronLeft, Trophy, Pencil, ImageUp, KeyRound, LogOut, ArrowUp } from "lucide-react";
 import { fetchJourneyDuration } from "./journeys";
 import { seedStations } from "./seed_stations";
 import HeaderLogo from "./components/HeaderLogo";
@@ -108,6 +108,7 @@ export default function App(){
   const [showMilestones, setShowMilestones] = useState(false);
   const [cooldownEnabled, setCooldownEnabled] = useState(()=>{ try{ return JSON.parse(localStorage.getItem(COOLDOWN_KEY) ?? "true"); }catch{ return true; }});
   const [homeStation, setHomeStation] = useState(()=>{ try{ return localStorage.getItem(HOME_KEY) || ""; }catch{ return ""; }});
+  const [showScrollTop, setShowScrollTop] = useState(false);
 
   const stationLabelFromName = (name) => {
     const n = normName(name);
@@ -150,6 +151,14 @@ export default function App(){
       fetchData(token).then(data=>{ if(data) updateStations(normalizeStations(data)); }).catch(()=>setToken(null));
     }
   }, [token, updateStations]);
+  useEffect(() => {
+    const onScroll = () => {
+      setShowScrollTop(window.scrollY > window.innerHeight * 1.5);
+    };
+    window.addEventListener('scroll', onScroll);
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+  const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
   const visitedIds = useMemo(()=> new Set(stations.filter(s=>s.visits.length>0).map(s=>s.id)), [stations]);
   const origin = homeStation.trim() ? stationLabelFromName(homeStation.trim()) : null;
   const rolledStations = rolled.map(id=>stations.find(s=>s.id===id)).filter(Boolean);
@@ -479,6 +488,17 @@ export default function App(){
           {addVisitFor && (<AddVisitForm onSave={addVisit} stationId={addVisitFor.id} />)}
         </Modal>
 
+        {showScrollTop && (
+          <button
+            onClick={scrollToTop}
+            className="fixed bottom-4 right-4 w-12 h-12 rounded-full bg-black text-white flex items-center justify-center z-50"
+            aria-label="Nach oben scrollen"
+            type="button"
+          >
+            <ArrowUp size={24} />
+          </button>
+        )}
+
         <div className="mt-10 text-center text-xs opacity-70"><p>{t('footer.madeWith')}</p></div>
       </div>
     </div>
@@ -579,7 +599,7 @@ function StationsPage({ stations, onBack }){
         >Am längsten her</button>
       </div>
 
-      <div className="space-y-2 max-h-[60vh] overflow-y-auto pr-1">
+      <div className="space-y-2 pr-1">
         {sorted.length===0 && (<div className="text-sm">Keine Bahnhöfe gefunden.</div>)}
         {sorted.map(st => (
           <div
