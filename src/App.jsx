@@ -470,7 +470,26 @@ export default function App(){
           </div>
           <div className="mt-4 rounded-2xl border-4 border-black p-4 bg-white/80">
             <h3 className="font-extrabold text-lg mb-2">{t('settings.account')}</h3>
-            {username && (<div className="mb-2 text-sm">{t('settings.account.loggedInAs')} <b>{username}</b></div>)}
+            {username && (
+              <>
+                <div className="mb-2 text-sm">{t('settings.account.loggedInAs')} <b>{username}</b></div>
+                <div className="mb-4">
+                  <label className="block text-sm font-bold mb-1">{t('settings.account.profileLink')}</label>
+                  <div className="flex gap-2 items-center">
+                    <input
+                      type="text"
+                      readOnly
+                      value={`${window.location.origin}/profile/${encodeURIComponent(username)}`}
+                      className="flex-1 px-3 py-2 rounded-lg border-4 border-black bg-white text-xs"
+                    />
+                    <button
+                      onClick={()=>navigator.clipboard.writeText(`${window.location.origin}/profile/${encodeURIComponent(username)}`)}
+                      className="px-3 py-2 rounded-lg border-4 border-black bg-blue-500 text-white text-xs font-bold"
+                    >{t('settings.account.copy')}</button>
+                  </div>
+                </div>
+              </>
+            )}
             <div className="flex flex-col sm:flex-row gap-2 w-full">
               <button
                 onClick={()=>setShowChangePassword(true)}
