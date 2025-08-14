@@ -1,6 +1,6 @@
-import { getDb, saveDb, auth } from '../_utils';
+import { getDb, saveDb, auth } from '../_utils.js';
 
-export const onRequestDelete = async ({ request, env }: { request: Request; env: any }): Promise<Response> => {
+export const onRequestDelete = async ({ request, env }) => {
   const db = await getDb(env);
   const user = auth(request, db);
   if (!user) {

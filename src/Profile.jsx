@@ -12,11 +12,9 @@ function formatDate(iso){
   }
 }
 
-interface ProfileProps { username: string }
-
-export default function Profile({ username }: ProfileProps) {
+export default function Profile({ username }) {
   const { t } = useI18n();
-  const [stations, setStations] = useState<any[] | null>(null);
+  const [stations, setStations] = useState(null);
   const [error, setError] = useState(false);
 
   useEffect(() => {

@@ -1,10 +1,4 @@
-interface ImageOptions {
-  maxSize?: number
-  mimeType?: string
-  quality?: number
-}
-
-export async function fileToDataUrl(file: File, options: ImageOptions = {}): Promise<string | ArrayBuffer | null> {
+export async function fileToDataUrl(file, options = {}) {
   const {
     maxSize = 1600,
     mimeType = 'image/webp',
@@ -12,7 +6,7 @@ export async function fileToDataUrl(file: File, options: ImageOptions = {}): Pro
   } = options;
 
   // Fallback: simple data URL if anything fails
-  async function fallback(): Promise<string | ArrayBuffer | null> {
+  async function fallback() {
     return await new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = () => resolve(reader.result);

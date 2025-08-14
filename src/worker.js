@@ -1,13 +1,13 @@
-import { login } from './api/login';
-import { register } from './api/register';
-import { logout } from './api/logout';
-import { password } from './api/password';
-import { accountDelete } from './api/account';
-import { dataGet, dataPost } from './api/data';
-import { profileGet } from './api/profile';
+import { login } from './api/login.js';
+import { register } from './api/register.js';
+import { logout } from './api/logout.js';
+import { password } from './api/password.js';
+import { accountDelete } from './api/account.js';
+import { dataGet, dataPost } from './api/data.js';
+import { profileGet } from './api/profile.js';
 
 export default {
-  async fetch(request: Request, env: any): Promise<Response> {
+  async fetch(request, env) {
     const url = new URL(request.url);
     const { pathname } = url;
 
@@ -49,7 +49,7 @@ export default {
 };
 
 // außerhalb des Objekt-Literals definieren
-async function handleApi(request: Request, env: any): Promise<Response | null> {
+async function handleApi(request, env) {
   const url = new URL(request.url);
 
   if (url.pathname === '/api/health' && request.method === 'GET') {

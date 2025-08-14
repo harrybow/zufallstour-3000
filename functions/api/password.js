@@ -1,6 +1,6 @@
-import { getDb, saveDb, parseBody, auth, hashPassword, verifyPassword } from '../_utils';
+import { getDb, saveDb, parseBody, auth, hashPassword, verifyPassword } from '../_utils.js';
 
-export const onRequestPost = async ({ request, env }: { request: Request; env: any }): Promise<Response> => {
+export const onRequestPost = async ({ request, env }) => {
   const db = await getDb(env);
   const user = auth(request, db);
   if (!user) {

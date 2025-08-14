@@ -1,6 +1,6 @@
-import { getDb, saveDb, parseBody, verifyPassword, randomHex } from '../_utils';
+import { getDb, saveDb, parseBody, verifyPassword, randomHex } from '../_utils.js';
 
-export const onRequestPost = async ({ request, env }: { request: Request; env: any }): Promise<Response> => {
+export const onRequestPost = async ({ request, env }) => {
   const { username, password } = await parseBody(request);
   const db = await getDb(env);
   const user = db.users.find(u => u.username === username);

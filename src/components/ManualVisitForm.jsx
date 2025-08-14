@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Camera } from "lucide-react";
 import ComboBox from "./ComboBox";
 import { useI18n } from "../i18n.jsx";
-import { fileToDataUrl } from "../imageUtils";
+import { fileToDataUrl } from "../imageUtils.js";
 
 export default function ManualVisitForm({ stations, onAdd, onCancel }){
   const { t } = useI18n();

@@ -1,6 +1,6 @@
-import { getDb } from '../../_utils';
+import { getDb } from '../../_utils.js';
 
-export const onRequestGet = async ({ env, params }: { env: any; params: { username: string } }): Promise<Response> => {
+export const onRequestGet = async ({ env, params }) => {
   const db = await getDb(env);
   const user = db.users.find(u => u.username === params.username);
   if (!user) {

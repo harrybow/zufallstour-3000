@@ -1,6 +1,6 @@
-import { getDb, saveDb, parseBody, auth } from '../_utils';
+import { getDb, saveDb, parseBody, auth } from '../_utils.js';
 
-export const onRequestGet = async ({ request, env }: { request: Request; env: any }): Promise<Response> => {
+export const onRequestGet = async ({ request, env }) => {
   const db = await getDb(env);
   const user = auth(request, db);
   if (!user) {
@@ -9,7 +9,7 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: an
   return Response.json({ data: db.data[user.id] || null });
 };
 
-export const onRequestPost = async ({ request, env }: { request: Request; env: any }): Promise<Response> => {
+export const onRequestPost = async ({ request, env }) => {
   const db = await getDb(env);
   const user = auth(request, db);
   if (!user) {

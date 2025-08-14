@@ -1,6 +1,6 @@
-import { getDb, saveDb } from '../_utils';
+import { getDb, saveDb } from '../_utils.js';
 
-export const onRequestPost = async ({ request, env }: { request: Request; env: any }): Promise<Response> => {
+export const onRequestPost = async ({ request, env }) => {
   const db = await getDb(env);
   const authHeader = request.headers.get('authorization');
   if (authHeader) {

@@ -1,19 +1,13 @@
-interface Database {
-  users: Array<{ id: number; username: string; password: string }>
-  data: Record<string, unknown>
-  sessions: Record<string, number>
-}
-
-export async function getDb(env: any): Promise<Database>{
+export async function getDb(env){
   const data = await env.DB.get('db');
   return data ? JSON.parse(data) : { users: [], data: {}, sessions: {} };
 }
 
-export async function saveDb(env: any, db: Database): Promise<void>{
+export async function saveDb(env, db){
   await env.DB.put('db', JSON.stringify(db));
 }
 
-export async function parseBody(request: Request): Promise<any>{
+export async function parseBody(request){
   try {
     return await request.json();
   } catch {
@@ -21,7 +15,7 @@ export async function parseBody(request: Request): Promise<any>{
   }
 }
 
-export async function hashPassword(password: string): Promise<string>{
+export async function hashPassword(password){
   const saltBytes = crypto.getRandomValues(new Uint8Array(16));
   const saltHex = Array.from(saltBytes).map(b => b.toString(16).padStart(2, '0')).join('');
   const data = new TextEncoder().encode(saltHex + password);
@@ -30,7 +24,7 @@ export async function hashPassword(password: string): Promise<string>{
   return `${saltHex}:${hashHex}`;
 }
 
-export async function verifyPassword(password: string, stored: string): Promise<boolean>{
+export async function verifyPassword(password, stored){
   const [saltHex, hashHex] = stored.split(':');
   const data = new TextEncoder().encode(saltHex + password);
   const hashBuffer = await crypto.subtle.digest('SHA-256', data);
@@ -38,7 +32,7 @@ export async function verifyPassword(password: string, stored: string): Promise<
   return hashHex === computed;
 }
 
-export function auth(request: Request, db: Database): { id: number } | null{
+export function auth(request, db){
   const authHeader = request.headers.get('authorization');
   if (!authHeader) return null;
   const token = authHeader.split(' ')[1];
@@ -46,7 +40,7 @@ export function auth(request: Request, db: Database): { id: number } | null{
   return uid ? { id: uid } : null;
 }
 
-export function randomHex(bytes: number): string{
+export function randomHex(bytes){
   const arr = crypto.getRandomValues(new Uint8Array(bytes));
   return Array.from(arr).map(b => b.toString(16).padStart(2, '0')).join('');
 }
