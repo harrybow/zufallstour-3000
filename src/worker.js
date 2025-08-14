@@ -36,6 +36,7 @@ export default {
       if (pathname.startsWith('/profil/') || pathname.startsWith('/profile/')) {
         // Fetch the clean-URL version to avoid redirects to /profile
         return env.ASSETS.fetch(new Request(`${url.origin}/profile`, request));
+
       }
       const asset = await env.ASSETS.fetch(request);
       if (asset.status === 404) {
