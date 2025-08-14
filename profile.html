@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Zufallstour 3000 Berlin</title>
+   <script>
+      const isLocal = ['localhost', '127.0.0.1'].includes(location.hostname)
+        || /^10\./.test(location.hostname)
+        || /^192\.168\./.test(location.hostname)
+        || /^172\.(1[6-9]|2[0-9]|3[0-1])\./.test(location.hostname)
+
+      if (location.protocol !== 'https:' && !isLocal) {
+        location.replace('https:' + location.href.substring(location.protocol.length))
+      }
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/profile.jsx"></script>
+  </body>
+</html>

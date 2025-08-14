@@ -185,7 +185,7 @@ export default function App(){
     return stats;
   }, [stations]);
   const photoCount = useMemo(()=> stations.reduce((acc,s)=> acc + s.visits.reduce((sum,v)=> sum + (v.photos?.length||0),0),0), [stations]);
-  const profileUrl = useMemo(() => username ? `${window.location.origin}/profile/${encodeURIComponent(username)}` : '', [username]);
+  const profileUrl = useMemo(() => username ? `${window.location.origin}/profil/${encodeURIComponent(username)}` : '', [username]);
 
   function handleLogin(tok, user){
     try { localStorage.removeItem(STORAGE_KEY); } catch { /* ignore */ }
