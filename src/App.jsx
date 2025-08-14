@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { Settings as SettingsIcon, Shuffle, MapPin, Camera, Upload, Download, Trash2, ArrowUpDown, Check, ChevronLeft, Trophy, Pencil, ImageUp, KeyRound, LogOut, ArrowUp, HelpCircle, Plus, X } from "lucide-react";
+import { Settings as SettingsIcon, Shuffle, MapPin, Camera, Upload, Download, Trash2, ArrowUpDown, Check, ChevronLeft, Trophy, Pencil, ImageUp, KeyRound, LogOut, ArrowUp, HelpCircle, Plus, X, Eye } from "lucide-react";
 import { fetchJourneyDuration } from "./journeys";
 import { seedStations } from "./seed_stations";
 import HeaderLogo from "./components/navigation/HeaderLogo";
@@ -185,7 +185,7 @@ export default function App(){
     return stats;
   }, [stations]);
   const photoCount = useMemo(()=> stations.reduce((acc,s)=> acc + s.visits.reduce((sum,v)=> sum + (v.photos?.length||0),0),0), [stations]);
-  const profileUrl = useMemo(() => username ? `${window.location.origin}/profile/${encodeURIComponent(username)}` : '', [username]);
+  const profileUrl = useMemo(() => username ? `${window.location.origin}/profil/${encodeURIComponent(username)}` : '', [username]);
 
   function handleLogin(tok, user){
     try { localStorage.removeItem(STORAGE_KEY); } catch { /* ignore */ }
@@ -484,6 +484,16 @@ export default function App(){
                       onClick={()=>navigator.clipboard.writeText(profileUrl)}
                       className="px-3 py-2 rounded-lg border-4 border-black bg-blue-500 text-white text-xs font-bold"
                     >{t('settings.account.copy')}</button>
+                    <a
+                      href={profileUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="p-2 rounded-lg border-4 border-black bg-white text-black flex items-center justify-center"
+                      aria-label={t('settings.account.open')}
+                      title={t('settings.account.open')}
+                    >
+                      <Eye size={16} />
+                    </a>
                   </div>
                 </div>
               </>

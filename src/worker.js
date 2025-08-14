@@ -32,9 +32,10 @@ export default {
 
     // ---- Statische Assets + SPA-Fallback ----
     if (request.method === 'GET' && !pathname.startsWith('/api/')) {
-      // Serve the SPA for profile links to avoid redirects
-      if (pathname.startsWith('/profile/')) {
-        return env.ASSETS.fetch(new Request(`${url.origin}/index.html`, request));
+      // Serve the dedicated profile SPA for direct links
+      if (pathname.startsWith('/profil/') || pathname.startsWith('/profile/')) {
+        // Fetch the clean-URL version to avoid redirects to /profile
+        return env.ASSETS.fetch(new Request(`${url.origin}/profile`, request));
       }
       const asset = await env.ASSETS.fetch(request);
       if (asset.status === 404) {

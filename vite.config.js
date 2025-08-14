@@ -20,5 +20,13 @@ export default defineConfig({
         secure: false,
       }
     }
+  },
+  build: {
+    rollupOptions: {
+      input: {
+        main: 'index.html',
+        profile: 'profile.html'
+      }
+    }
   }
 })
