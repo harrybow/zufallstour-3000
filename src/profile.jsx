@@ -1,6 +1,5 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import './index.css'
 import Profile from './Profile.jsx'
 import { I18nProvider } from './i18n.jsx'
 

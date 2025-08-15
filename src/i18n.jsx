@@ -12,7 +12,13 @@ export function I18nProvider({ children }) {
     document.documentElement.lang = lang;
     document.title = translations[lang]['app.title'] || 'Zufallstour 3000';
   }, [lang]);
-  const t = (key) => translations[lang][key] || key;
+  const t = (key, vars = {}) => {
+    let str = translations[lang][key] || key;
+    Object.entries(vars).forEach(([vk, vv]) => {
+      str = str.replace(new RegExp(`{{${vk}}}`, 'g'), String(vv));
+    });
+    return str;
+  };
   return (
     <I18nContext.Provider value={{ lang, setLang, t }}>
       {children}
