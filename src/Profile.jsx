@@ -3,6 +3,7 @@ import { stationLabel } from './App.jsx';
 import { useI18n } from './i18n.jsx';
 import LineChips from './components/LineChips.jsx';
 import { Check } from 'lucide-react';
+import Footer from './components/Footer.jsx';
 
 function formatDate(iso){
   if(!iso) return '';
@@ -96,6 +97,7 @@ export default function Profile({ username }) {
   if(!stations) return <div className="p-4">{t('profile.loading')}</div>;
 
   return (
+    <>
     <div className="p-4">
       <div className="rounded-[28px] border-4 border-black shadow-[10px_10px_0_0_rgba(0,0,0,0.6)] bg-gradient-to-br from-teal-300 via-rose-200 to-amber-200 p-4 sm:p-6 space-y-6">
         <h1 className="text-2xl font-extrabold">{t('profile.title',{username})}</h1>
@@ -142,5 +144,7 @@ export default function Profile({ username }) {
         </section>
       </div>
     </div>
+    <Footer />
+    </>
   );
 }
