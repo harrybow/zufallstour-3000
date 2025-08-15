@@ -1,4 +1,4 @@
-import { getDb, saveDb, auth } from '../utils.js';
+import { getDb, saveDb, auth } from '../../shared/utils.js';
 
 export async function accountDelete(request, env) {
   const db = await getDb(env);

@@ -1,4 +1,4 @@
-import { getDb, saveDb, parseBody, hashPassword } from '../utils.js';
+import { getDb, saveDb, parseBody, hashPassword } from '../../shared/utils.js';
 
 export async function register(request, env) {
   const { username, password } = await parseBody(request);

@@ -1,4 +1,4 @@
-import { getDb, saveDb, parseBody, hashPassword } from '../_utils.js';
+import { getDb, saveDb, parseBody, hashPassword } from '../../shared/utils.js';
 
 export const onRequestPost = async ({ request, env }) => {
   const { username, password } = await parseBody(request);
