@@ -1,4 +1,4 @@
-import { getDb, saveDb, parseBody, auth } from '../_utils.js';
+import { getDb, saveDb, parseBody, auth } from '../../shared/utils.js';
 
 export const onRequestGet = async ({ request, env }) => {
   const db = await getDb(env);

@@ -1,4 +1,4 @@
-import { getDb, saveDb, parseBody, verifyPassword, randomHex } from '../utils.js';
+import { getDb, saveDb, parseBody, verifyPassword, randomHex } from '../../shared/utils.js';
 
 export async function login(request, env) {
   const { username, password } = await parseBody(request);

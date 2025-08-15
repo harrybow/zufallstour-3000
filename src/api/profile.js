@@ -1,4 +1,4 @@
-import { getDb } from '../utils.js';
+import { getDb } from '../../shared/utils.js';
 
 export async function profileGet(request, env, username) {
   const db = await getDb(env);

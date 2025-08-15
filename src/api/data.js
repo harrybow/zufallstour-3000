@@ -1,4 +1,4 @@
-import { getDb, saveDb, parseBody, auth } from '../utils.js';
+import { getDb, saveDb, parseBody, auth } from '../../shared/utils.js';
 
 export async function dataGet(request, env) {
   const db = await getDb(env);

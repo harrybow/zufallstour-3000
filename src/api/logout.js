@@ -1,4 +1,4 @@
-import { getDb, saveDb } from '../utils.js';
+import { getDb, saveDb } from '../../shared/utils.js';
 
 export async function logout(request, env) {
   const db = await getDb(env);

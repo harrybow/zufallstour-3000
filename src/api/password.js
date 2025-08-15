@@ -1,4 +1,4 @@
-import { getDb, saveDb, parseBody, auth, hashPassword, verifyPassword } from '../utils.js';
+import { getDb, saveDb, parseBody, auth, hashPassword, verifyPassword } from '../../shared/utils.js';
 
 export async function password(request, env) {
   const db = await getDb(env);
