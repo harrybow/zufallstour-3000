@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { stationLabel } from './App.jsx';
 import { useI18n } from './i18n.jsx';
+import LineChips from './components/LineChips.jsx';
+import { Check } from 'lucide-react';
 
 function formatDate(iso){
   if(!iso) return '';
@@ -94,27 +96,51 @@ export default function Profile({ username }) {
   if(!stations) return <div className="p-4">{t('profile.loading')}</div>;
 
   return (
-    <div className="p-4 space-y-6">
-      <h1 className="text-2xl font-extrabold">{t('profile.title',{username})}</h1>
-      <section>
-        <h2 className="text-xl font-bold mb-2">{t('profile.milestones')}</h2>
-        {milestones.length===0 && <div className="text-sm">{t('profile.noMilestones')}</div>}
-        <ul className="list-disc ml-5 space-y-1">
-          {milestones.map(m=> (
-            <li key={m.label}>{m.label}{m.date?` – ${formatDate(m.date)}`:''}</li>
-          ))}
-        </ul>
-      </section>
-      <section>
-        <h2 className="text-xl font-bold mb-2">{t('profile.visited')}</h2>
-        <div className="text-sm mb-2">{visitedCount}/{total} ({percent}%)</div>
-        {visitedStations.length===0 && <div className="text-sm">{t('profile.noneVisited')}</div>}
-        <ul className="list-disc ml-5 space-y-1">
-          {visitedStations.map(s=> (
-            <li key={s.id}>{stationLabel(s)}{s.visits[0]?.date?` – ${formatDate(s.visits[0].date)}`:''}</li>
-          ))}
-        </ul>
-      </section>
+    <div className="p-4">
+      <div className="rounded-[28px] border-4 border-black shadow-[10px_10px_0_0_rgba(0,0,0,0.6)] bg-gradient-to-br from-teal-300 via-rose-200 to-amber-200 p-4 sm:p-6 space-y-6">
+        <h1 className="text-2xl font-extrabold">{t('profile.title',{username})}</h1>
+        <section>
+          <h2 className="text-xl font-bold mb-2">{t('profile.milestones')}</h2>
+          {milestones.length===0 && <div className="text-sm">{t('profile.noMilestones')}</div>}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            {milestones.map(m=> (
+              <div key={m.label} className="w-full rounded-xl border-4 border-black p-2 text-center bg-green-300">
+                <div className="font-black">{m.label}</div>
+                {m.date && (
+                  <div className="text-xs flex items-center justify-center gap-1"><Check size={14}/> {formatDate(m.date)}</div>
+                )}
+              </div>
+            ))}
+          </div>
+        </section>
+        <section>
+          <h2 className="text-xl font-bold mb-2">{t('profile.visited')}</h2>
+          <div className="text-sm mb-2">{visitedCount}/{total} ({percent}%)</div>
+          {visitedStations.length===0 && <div className="text-sm">{t('profile.noneVisited')}</div>}
+          <div className="space-y-4">
+            {visitedStations.map(s=> {
+              const photos = (s.visits||[]).flatMap(v=>v.photos||[]);
+              const lastDate = s.visits[s.visits.length-1]?.date;
+              return (
+                <div key={s.id} className="p-2 border-4 border-black rounded-xl bg-white/80">
+                  <div className="font-extrabold truncate">{stationLabel(s)}</div>
+                  <LineChips lines={s.lines} types={s.types} />
+                  {lastDate && <div className="text-xs mt-1">{t('station.visitedOn')} <b>{formatDate(lastDate)}</b></div>}
+                  {photos.length>0 && (
+                    <div className="mt-2 grid grid-cols-2 sm:grid-cols-4 gap-2">
+                      {photos.map((p,idx)=>(
+                        <div key={idx} className="w-full h-48 rounded-xl border-2 border-black overflow-hidden bg-white">
+                          <img src={p} alt="Foto" className="w-full h-full object-contain"/>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      </div>
     </div>
   );
 }
