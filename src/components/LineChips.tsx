@@ -1,6 +1,6 @@
 import React from "react";
 
-export default function LineChips({ lines, types = [] }){
+export default function LineChips({ lines, types = [] }: { lines?: string[]; types?: string[] }){
   const items = [...(lines || [])];
   if (types.includes("R")) items.unshift("R");
   if (!items.length) return null;

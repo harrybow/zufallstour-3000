@@ -8,6 +8,9 @@ const useHttps = process.env.HTTPS === 'true'
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  resolve: {
+    extensions: ['.ts', '.tsx', '.js', '.jsx'],
+  },
   server: {
     host: true,
     port: 5173,

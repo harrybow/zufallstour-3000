@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import { Camera } from "lucide-react";
-import { useI18n } from "../../i18n.jsx";
+import { useI18n } from "../../i18n";
 import { fileToDataUrl } from "../../imageUtils.js";
 
-export default function AddVisitForm({ stationId, onSave }) {
+type VisitInput = { date: string; note?: string; photos?: string[] };
+export default function AddVisitForm({ stationId, onSave }: { stationId: string; onSave: (stationId: string, visit: VisitInput) => void }) {
   const { t } = useI18n();
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [note, setNote] = useState("");

@@ -1,7 +1,7 @@
 import React, { useRef, useState } from "react";
-import { useI18n } from "../i18n.jsx";
+import { useI18n } from "../i18n";
 
-export default function ZoomBox({ src }){
+export default function ZoomBox({ src }: { src: string }){
   const wrapRef = useRef(null);
   const { t } = useI18n();
   const [scale, setScale] = useState(1);

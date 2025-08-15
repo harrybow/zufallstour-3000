@@ -1,12 +1,17 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import de from './locales/de.json';
 import en from './locales/en.json';
 
-const translations = { de, en };
-const I18nContext = createContext({ lang: 'de', setLang: () => {}, t: (k) => k });
+const translations: Record<string, Record<string, string>> = { de, en };
+interface I18nContextValue {
+  lang: string;
+  setLang: (lang: string) => void;
+  t: (k: string, vars?: Record<string, unknown>) => string;
+}
+const I18nContext = createContext<I18nContextValue>({ lang: 'de', setLang: () => {}, t: (k) => k });
 
-export function I18nProvider({ children }) {
-  const [lang, setLang] = useState(() => localStorage.getItem('lang') || 'de');
+export function I18nProvider({ children }: { children: ReactNode }) {
+  const [lang, setLang] = useState<string>(() => localStorage.getItem('lang') || 'de');
   useEffect(() => {
     localStorage.setItem('lang', lang);
     document.documentElement.lang = lang;

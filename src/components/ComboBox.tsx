@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { useI18n } from "../i18n.jsx";
+import { useI18n } from "../i18n";
 
-export default function ComboBox({ options, value, onChange, placeholder }){
+type Option = { id: string; name: string };
+export default function ComboBox({ options, value, onChange, placeholder }: { options: Option[]; value?: string; onChange?: (id: string) => void; placeholder?: string }){
   const { t } = useI18n();
   const wrapRef = useRef(null);
   const inputRef = useRef(null);

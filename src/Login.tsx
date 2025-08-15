@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { login, register } from './api.js';
-import { useI18n } from './i18n.jsx';
+import { useI18n } from './i18n';
 
-export default function Login({ onSuccess }){
+export default function Login({ onSuccess }: { onSuccess: (token: string, username: string) => void }){
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [mode, setMode] = useState('login');

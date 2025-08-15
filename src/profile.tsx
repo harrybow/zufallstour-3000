@@ -1,10 +1,10 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import Profile from './Profile.jsx'
-import { I18nProvider } from './i18n.jsx'
+import Profile from './Profile'
+import { I18nProvider } from './i18n'
 
 const match = window.location.pathname.match(/^\/profil\/([^/]+)\/?$/)
-const username = match ? decodeURIComponent(match[1]) : ''
+const username: string = match ? decodeURIComponent(match[1]) : ''
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

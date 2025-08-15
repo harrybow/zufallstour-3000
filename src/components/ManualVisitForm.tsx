@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { Camera } from "lucide-react";
 import ComboBox from "./ComboBox";
-import { useI18n } from "../i18n.jsx";
+import { useI18n } from "../i18n";
 import { fileToDataUrl } from "../imageUtils.js";
 
-export default function ManualVisitForm({ stations, onAdd, onCancel }){
+type StationOption = { id: string; name: string };
+type VisitInput = { date: string; note?: string; photos?: string[] };
+export default function ManualVisitForm({ stations, onAdd, onCancel }: { stations: StationOption[]; onAdd: (stationId: string, visit: VisitInput) => void; onCancel?: () => void }){
   const { t } = useI18n();
   const [stationId, setStationId] = useState(stations[0]?.id || "");
   const [date, setDate] = useState(() => new Date().toISOString().slice(0,10));

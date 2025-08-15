@@ -1,10 +1,10 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { stationLabel } from './App.jsx';
-import { useI18n } from './i18n.jsx';
-import LineChips from './components/LineChips.jsx';
+import { stationLabel, type Station } from './App';
+import { useI18n } from './i18n';
+import LineChips from './components/LineChips';
 import { Check } from 'lucide-react';
 
-function formatDate(iso){
+function formatDate(iso: string){
   if(!iso) return '';
   try {
     const d = new Date(iso + (iso.length === 10 ? 'T00:00:00' : ''));
@@ -14,9 +14,9 @@ function formatDate(iso){
   }
 }
 
-export default function Profile({ username }) {
+export default function Profile({ username }: { username: string }) {
   const { t } = useI18n();
-  const [stations, setStations] = useState(null);
+  const [stations, setStations] = useState<Station[] | null>(null);
   const [error, setError] = useState(false);
 
   useEffect(() => {
