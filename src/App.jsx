@@ -20,7 +20,6 @@ import { fileToDataUrl } from "./imageUtils.js";
 import helpDe from "./help.de.html?raw";
 import helpEn from "./help.en.html?raw";
 import { formatDate } from "./formatDate.js";
-import Footer from "./components/Footer.jsx";
 
 // Helpers & Types
 const STORAGE_KEY = "zufallstour3000.v4";
@@ -346,12 +345,11 @@ export default function App(){
   }
   
 
-    return (
-      <>
-        <div className="min-h-screen w-full bg-[repeating-linear-gradient(135deg,_#ffea61_0,_#ffea61_8px,_#ffd447_8px,_#ffd447_16px)] p-3 sm:p-6">
-          <div className="max-w-3xl mx-auto">
-            <HeaderLogo className="h-16 w-auto mx-auto my-0" />
-            <style>{`
+  return (
+    <div className="min-h-screen w-full bg-[repeating-linear-gradient(135deg,_#ffea61_0,_#ffea61_8px,_#ffd447_8px,_#ffd447_16px)] p-3 sm:p-6">
+      <div className="max-w-3xl mx-auto">
+        <HeaderLogo className="h-16 w-auto mx-auto my-0" />
+        <style>{`
           button{cursor:pointer}
           @keyframes shake{10%,90%{transform:translateX(-1px)}20%,80%{transform:translateX(2px)}30%,50%,70%{transform:translateX(-4px)}40%,60%{transform:translateX(4px)}}
           @keyframes slamIn{0%{transform:scale(.2) rotate(-35deg);opacity:0}60%{transform:scale(1.15) rotate(8deg);opacity:1}80%{transform:scale(1.03) rotate(-6deg)}100%{transform:scale(1) rotate(-8deg)}}
@@ -555,13 +553,11 @@ export default function App(){
           </button>
         )}
 
-            <div className="mt-10 text-center text-xs opacity-70"><p>{t('footer.madeWith')}</p></div>
-          </div>
-        </div>
-        <Footer />
-      </>
-    );
-  }
+        <div className="mt-10 text-center text-xs opacity-70"><p>{t('footer.madeWith')}</p></div>
+      </div>
+    </div>
+  );
+}
 
 // Station Row
 function StationRow({ st, origin, onAddVisit, onUnvisit }){
