@@ -1,10 +1,15 @@
 import React from "react";
 
-export default function LineChips({ lines, types = [] }){
+interface LineChipsProps {
+  lines?: string[];
+  types?: string[];
+}
+
+export default function LineChips({ lines, types = [] }: LineChipsProps){
   const items = [...(lines || [])];
   if (types.includes("R")) items.unshift("R");
   if (!items.length) return null;
-  const chip = (l, i) => {
+  const chip = (l: string, i: number) => {
     const t = String(l).toUpperCase();
     const isS = /^S/.test(t), isU = /^U/.test(t), isR = /^(RE|RB|FEX|R)/.test(t);
     const shape = isS ? 'rounded-full' : 'rounded-sm';

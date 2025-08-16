@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { googleMapsUrl, pickThreeUnvisited, rollAllowed, makeDataUrl, stationLabel } from '../src/App.jsx';
+import { googleMapsUrl, pickThreeUnvisited, rollAllowed, makeDataUrl, stationLabel } from '../src/App';
 import { formatDate } from '../src/formatDate.js';
 
 describe('utility functions', () => {
