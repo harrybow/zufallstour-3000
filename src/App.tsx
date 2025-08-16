@@ -15,7 +15,7 @@ import MilestonesModal from "./components/milestones/MilestonesModal";
 import useScrollTop from "./hooks/useScrollTop";
 import Login from "./Login";
 import { fetchData, saveData, logout as apiLogout, deleteAccount, changePassword } from "./api.js";
-import { useI18n } from "./i18n.jsx";
+import { useI18n } from "./i18n";
 import { fileToDataUrl } from "./imageUtils.js";
 import helpDe from "./help.de.html?raw";
 import helpEn from "./help.en.html?raw";
@@ -25,26 +25,28 @@ import { formatDate } from "./formatDate.js";
 const STORAGE_KEY = "zufallstour3000.v4";
 const COOLDOWN_KEY = "zufallstour3000.cooldownEnabled";
 const HOME_KEY = "zufallstour3000.homeStation";
-/** @typedef {{ id:string; name:string; types:("S"|"U"|"R")[]; lines?: string[]; visits: Visit[] }} Station */
-/** @typedef {{ date: string; note?: string; photos?: string[] }} Visit */
-const uid = () => Math.random().toString(36).slice(2, 10);
-const stripRegionalPrefix = (name) => {
+
+export interface Visit { date: string; note?: string; photos?: string[] }
+export interface Station { id: string; name: string; types: ("S"|"U"|"R")[]; lines?: string[]; visits: Visit[] }
+
+const uid = (): string => Math.random().toString(36).slice(2, 10);
+const stripRegionalPrefix = (name: string): string => {
   const match = /^([A-Z+]+)\s+(.*)$/.exec(name);
   if (!match) return name;
   const types = match[1].split('+').filter(t => t !== 'R');
   return (types.length ? types.join('+') + ' ' : '') + match[2];
 };
-export const googleMapsUrl = (name) => {
+export const googleMapsUrl = (name: string): string => {
   const clean = stripRegionalPrefix(name);
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(clean + ", Berlin")}`;
 };
-export const stationLabel = (st) => {
+export const stationLabel = (st: { name: string; types?: ("S"|"U"|"R")[] }): string => {
   const prefix = Array.isArray(st?.types) && st.types.length
     ? [...st.types].sort().join('+')
     : '';
   return prefix ? `${prefix} ${st.name}` : st.name;
 };
-const downloadFile = (filename, text, mime = "application/json;charset=utf-8") => {
+const downloadFile = (filename: string, text: string, mime = "application/json;charset=utf-8"): void => {
   try {
     const blob = new Blob([text], { type: mime });
     const url = URL.createObjectURL(blob);
@@ -57,9 +59,18 @@ const downloadFile = (filename, text, mime = "application/json;charset=utf-8") =
     window.open(url, "_blank"); setTimeout(()=>URL.revokeObjectURL(url), 10000);
   }
 };
-export const makeDataUrl = (text, mime="application/json;charset=utf-8") => URL.createObjectURL(new Blob([text], {type:mime}));
-export const pickThreeUnvisited = (stations/**:Station[]*/)=>{ const unvisited=stations.filter(s=>(s.visits?.length||0)===0); if(!unvisited.length) return []; const pool=[...unvisited]; for(let i=pool.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [pool[i],pool[j]]=[pool[j],pool[i]];} return pool.slice(0,Math.min(3,pool.length)).map(s=>s.id); };
-export const rollAllowed = (lastTs, now=Date.now()) => !lastTs || (now-lastTs)>=20000;
+export const makeDataUrl = (text: string, mime = "application/json;charset=utf-8"): string => URL.createObjectURL(new Blob([text], {type:mime}));
+export const pickThreeUnvisited = (stations: Station[]): string[] => {
+  const unvisited = stations.filter(s => (s.visits?.length || 0) === 0);
+  if (!unvisited.length) return [];
+  const pool = [...unvisited];
+  for (let i = pool.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [pool[i], pool[j]] = [pool[j], pool[i]];
+  }
+  return pool.slice(0, Math.min(3, pool.length)).map(s => s.id);
+};
+export const rollAllowed = (lastTs: number, now = Date.now()): boolean => !lastTs || (now-lastTs)>=20000;
 
 // Seed aus externer Datei (seed_stations.js)
 const makeSeed = () => (seedStations || []).map(s => ({

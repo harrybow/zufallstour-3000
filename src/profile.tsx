@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { stationLabel } from './App.jsx';
-import { useI18n } from './i18n.jsx';
-import LineChips from './components/LineChips.jsx';
+import { stationLabel } from './App';
+import { useI18n } from './i18n';
+import LineChips from './components/LineChips';
 import { Check } from 'lucide-react';
 
 function formatDate(iso){
