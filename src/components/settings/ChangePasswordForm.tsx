@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 
+/* eslint-disable no-unused-vars */
 export default function ChangePasswordForm({ onSave, onCancel }: { onSave: (oldPw: string, newPw: string) => void; onCancel: () => void }) {
   const [oldPw, setOldPw] = useState("");
   const [newPw, setNewPw] = useState("");
