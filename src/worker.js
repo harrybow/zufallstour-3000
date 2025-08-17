@@ -61,13 +61,17 @@ async function handleApi(request, env) {
   }
 
   if (url.pathname === '/api/db' && request.method === 'GET') {
-    const data = await env.DB.get('app_db');
-    return new Response(data ?? "{}", { headers: { 'content-type': 'application/json' } });
+    const users = (await env.DB.prepare('SELECT id, username FROM users').all()).results;
+    const dataRows = (await env.DB.prepare('SELECT user_id, data FROM user_data').all()).results;
+    const sessionRows = (await env.DB.prepare('SELECT token, user_id FROM sessions').all()).results;
+    const data = Object.fromEntries(dataRows.map(r => [r.user_id, JSON.parse(r.data)]));
+    const sessions = Object.fromEntries(sessionRows.map(r => [r.token, r.user_id]));
+    return new Response(JSON.stringify({ users, data, sessions }), { headers: { 'content-type': 'application/json' } });
   }
 
   if (url.pathname === '/api/db' && request.method === 'PUT') {
-    const body = await request.text(); // JSON-String
-    await env.DB.put('app_db', body);
+    const body = await request.text();
+    await env.DB.exec(body);
     return new Response(null, { status: 204 });
   }
 

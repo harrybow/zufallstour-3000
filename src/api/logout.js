@@ -1,12 +1,10 @@
-import { getDb, saveDb } from '../../shared/utils.js';
+import { deleteSession } from '../../shared/utils.js';
 
 export async function logout(request, env) {
-  const db = await getDb(env);
   const authHeader = request.headers.get('authorization');
   if (authHeader) {
     const token = authHeader.split(' ')[1];
-    delete db.sessions[token];
-    await saveDb(env, db);
+    await deleteSession(env, token);
   }
   return Response.json({ success: true });
 }
