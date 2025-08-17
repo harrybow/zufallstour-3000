@@ -1,12 +1,11 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { Settings as SettingsIcon, Shuffle, MapPin, Camera, Upload, Download, Trash2, ArrowUpDown, Check, ChevronLeft, Trophy, Pencil, ImageUp, KeyRound, LogOut, ArrowUp, HelpCircle, Plus, X, Eye } from "lucide-react";
+import { Settings as SettingsIcon, Shuffle, MapPin, Camera, Upload, Download, Trash2, ArrowUpDown, ChevronLeft, Trophy, Pencil, ImageUp, KeyRound, LogOut, ArrowUp, HelpCircle, Plus, X, Eye } from "lucide-react";
 import { fetchJourneyDuration } from "./journeys";
 import { seedStations } from "./seed_stations";
 import HeaderLogo from "./components/navigation/HeaderLogo";
 import LineChips from "./components/LineChips";
 import Modal from "./components/Modal";
-import ComboBox from "./components/ComboBox";
 import ManualVisitForm from "./components/ManualVisitForm";
 import ZoomBox from "./components/ZoomBox";
 import ChangePasswordForm from "./components/settings/ChangePasswordForm";
@@ -88,10 +87,10 @@ const normalizeStations = (data) => {
     ...st,
     visits: Array.isArray(st.visits)
       ? st.visits.map(v => {
+          const { photo, ...rest } = v || {};
           const photos = Array.isArray(v.photos)
             ? v.photos
-            : (v.photo ? [v.photo] : []);
-          const { photo: _photo, ...rest } = v || {};
+            : (photo ? [photo] : []);
           return { ...rest, photos };
         })
       : [],
