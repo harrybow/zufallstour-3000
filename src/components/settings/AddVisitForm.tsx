@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Camera } from "lucide-react";
-import { useI18n } from "../../i18n.jsx";
+import { useI18n } from "../../i18n";
 import { fileToDataUrl } from "../../imageUtils.js";
 
 export default function AddVisitForm({ stationId, onSave }) {

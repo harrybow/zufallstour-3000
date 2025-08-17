@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { login, register } from './api.js';
-import { useI18n } from './i18n.jsx';
+import { useI18n } from './i18n';
 
 export default function Login({ onSuccess }){
   const [username, setUsername] = useState('');

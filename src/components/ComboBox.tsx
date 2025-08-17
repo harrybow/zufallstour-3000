@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { useI18n } from "../i18n.jsx";
+import { useI18n } from "../i18n";
 
 export default function ComboBox({ options, value, onChange, placeholder }){
   const { t } = useI18n();

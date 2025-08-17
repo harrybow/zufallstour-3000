@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-export default function ChangePasswordForm({ onSave, onCancel }) {
+export default function ChangePasswordForm({ onSave, onCancel }: { onSave: (oldPw: string, newPw: string) => void; onCancel: () => void }) {
   const [oldPw, setOldPw] = useState("");
   const [newPw, setNewPw] = useState("");
 

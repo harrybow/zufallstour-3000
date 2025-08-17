@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import React from "react";
 import { renderToString } from "react-dom/server";
-import MilestonesModal from "../src/components/milestones/MilestonesModal.jsx";
+import MilestonesModal from "../src/components/milestones/MilestonesModal";
 
 describe("MilestonesModal", () => {
   it("renders milestone sections", () => {
