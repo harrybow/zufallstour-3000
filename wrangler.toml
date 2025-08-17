@@ -4,10 +4,10 @@ compatibility_date = "2024-05-01"
 
 assets = { directory = "dist", binding = "ASSETS" }
 
-[[kv_namespaces]]
+[[d1_databases]]
 binding = "DB"
-id = "37acae97c20240979b10e8b9a61a1e41"
-preview_id = "94fcb0dea86d42d19033bc0612955df8"
+database_name = "zufallstour-3000"
+database_id = "227a9d95-f3e1-48b2-bcf5-6a4a4e91f27d"
 
 [observability.logs]
 enabled = true

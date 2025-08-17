@@ -3,15 +3,11 @@ import { onRequestPost as register } from '../functions/api/register.js';
 import { onRequestPost as login } from '../functions/api/login.js';
 import { onRequestPost as dataPost } from '../functions/api/data.js';
 import { onRequestGet as profileGet } from '../functions/api/profile/[username].js';
+import { initDb } from '../shared/utils.js';
+import { createD1 } from './d1-mock.js';
 
 function makeEnv(){
-  const store = {};
-  return {
-    DB: {
-      async get(key){ return store[key] || null; },
-      async put(key, val){ store[key] = val; }
-    }
-  };
+  return { DB: createD1() };
 }
 
 function makeRequest(url, method, body, token){
@@ -27,8 +23,9 @@ function makeRequest(url, method, body, token){
 
 let env;
 
-beforeEach(() => {
+beforeEach(async () => {
   env = makeEnv();
+  await initDb(env.DB);
 });
 
 describe('profile endpoint', () => {
